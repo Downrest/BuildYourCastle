@@ -1,19 +1,25 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 
-local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
 local Lyra = require(ReplicatedStorage.SharedPackages.Lyra)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local t = require(ReplicatedStorage.SharedPackages.t)
+local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
 local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
 
 local DataServerService = {}
 
+export type CastleData = {
+    popularity: number;
+    unlockedButtons: {
+        [string]: boolean;
+    }
+}
 export type PlayerData = {
     currency: {
         gold: number;
-    }
+    };
+    castle: CastleData;
 }
 
 DataServerService.DataChanged = Signal.new<<(player: Player, newData: PlayerData, oldData: PlayerData?) -> ()>>()
@@ -26,9 +32,9 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         };
         castle = {
             popularity = 0;
-            -- unlockedButtons = {
-            --     [CastleServerService.STRUCTURE_NAMES.Pathway1] = false;
-            -- };
+            unlockedButtons = {
+                [CastleSharedService.STRUCTURE_NAMES.Pathway1] = false;
+            };
         };
     };
     schema = t.strictInterface({
@@ -37,9 +43,7 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         });
         castle = t.strictInterface({
             popularity = t.number;
-            -- unlockedButtons = t.strictInterface({
-            --     [t.string] = t.boolean;
-            -- })
+            unlockedButtons = t.values(t.boolean);
         })
     });
     changedCallbacks = {
@@ -97,10 +101,9 @@ function DataServerService.GetPlayerData(player: Player): PlayerData
     return playerStore:getAsync(player)
 end
 
-function DataServerService.SetGold(player: Player, goldAmount: number)
+function DataServerService.SetPlayerData(player: Player, setCallback: (data: PlayerData) -> boolean)
     playerStore:updateAsync(player, function(data)
-        data.currency.gold = goldAmount
-        return true
+        return setCallback(data)
     end)
 end
 

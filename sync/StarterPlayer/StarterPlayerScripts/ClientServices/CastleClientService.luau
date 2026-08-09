@@ -1,0 +1,3 @@
+local CastleClientService = {}
+
+return CastleClientService

@@ -553,10 +553,10 @@ t.exactly = t.literal
 
 	@returns True iff the condition is satisfied, false otherwise
 **--]]
-function t.keyOf(keyTable)
+function t.keyOf(keyTable: { [any]: any }): check
 	local keys = {}
 	local length = 0
-	for key in pairs(keyTable) do
+	for key in keyTable do
 		length = length + 1
 		keys[length] = key
 	end
@@ -571,10 +571,10 @@ end
 
 	@returns True iff the condition is satisfied, false otherwise
 **--]]
-function t.valueOf(valueTable)
+function t.valueOf(valueTable: { [any]: any }): check
 	local values = {}
 	local length = 0
-	for _, value in pairs(valueTable) do
+	for _, value in valueTable do
 		length = length + 1
 		values[length] = value
 	end
@@ -609,7 +609,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberMin(min): check
+function t.numberMin(min: number): check
 	return function(value)
 		local success, errMsg = t.number(value)
 		if not success then
@@ -619,7 +619,7 @@ function t.numberMin(min): check
 		if value >= min then
 			return true, nil
 		else
-			return false, string.format("number >= %s expected, got %s", min, value)
+			return false, string.format("number >= %f expected, got %s", min, value)
 		end
 	end
 end
@@ -631,7 +631,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberMax(max): check
+function t.numberMax(max: number): check
 	return function(value)
 		local success, errMsg = t.number(value)
 		if not success then
@@ -641,7 +641,7 @@ function t.numberMax(max): check
 		if value <= max then
 			return true, nil
 		else
-			return false, string.format("number <= %s expected, got %s", max, value)
+			return false, string.format("number <= %f expected, got %s", max, value)
 		end
 	end
 end
@@ -653,7 +653,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberMinExclusive(min): check
+function t.numberMinExclusive(min: number): check
 	return function(value)
 		local success, errMsg = t.number(value)
 		if not success then
@@ -663,7 +663,7 @@ function t.numberMinExclusive(min): check
 		if min < value then
 			return true, nil
 		else
-			return false, string.format("number > %s expected, got %s", min, value)
+			return false, string.format("number > %f expected, got %s", min, value)
 		end
 	end
 end
@@ -675,7 +675,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberMaxExclusive(max): check
+function t.numberMaxExclusive(max: number): check
 	return function(value)
 		local success, errMsg = t.number(value)
 		if not success then
@@ -685,7 +685,7 @@ function t.numberMaxExclusive(max): check
 		if value < max then
 			return true, nil
 		else
-			return false, string.format("number < %s expected, got %s", max, value)
+			return false, string.format("number < %f expected, got %s", max, value)
 		end
 	end
 end
@@ -712,7 +712,7 @@ t.numberNegative = t.numberMaxExclusive(0)
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberConstrained(min, max): check
+function t.numberConstrained(min: number, max: number): check
 	assert(t.number(min))
 	assert(t.number(max))
 	local minCheck = t.numberMin(min)
@@ -741,7 +741,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.numberConstrainedExclusive(min, max): check
+function t.numberConstrainedExclusive(min: number, max: number): check
 	assert(t.number(min))
 	assert(t.number(max))
 	local minCheck = t.numberMinExclusive(min)
@@ -769,7 +769,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.match(pattern): check
+function t.match(pattern: string): check
 	assert(t.string(pattern))
 	return function(value)
 		local stringSuccess, stringErrMsg = t.string(value)
@@ -792,7 +792,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.optional(check): check
+function t.optional(check: check): check
 	assert(t.callback(check))
 	return function(value)
 		if value == nil then
@@ -819,7 +819,7 @@ function t.tuple(...: check): check
 	local checks = { ... }
 	return function(...)
 		local args = { ... }
-		for i, check in ipairs(checks) do
+		for i, check in checks do
 			local success, errMsg = check(args[i])
 			if success == false then
 				return false, string.format("Bad tuple index #%d:\n\t%s", i, errMsg or "")
@@ -837,7 +837,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.keys(check): check
+function t.keys(check: check): check
 	assert(t.callback(check))
 	return function(value)
 		local tableSuccess, tableErrMsg = t.table(value)
@@ -845,7 +845,7 @@ function t.keys(check): check
 			return false, tableErrMsg or ""
 		end
 
-		for key in pairs(value) do
+		for key in value do
 			local success, errMsg = check(key)
 			if success == false then
 				return false, string.format("bad key %s:\n\t%s", tostring(key), errMsg or "")
@@ -863,7 +863,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.values(check): check
+function t.values(check: check): check
 	assert(t.callback(check))
 	return function(value)
 		local tableSuccess, tableErrMsg = t.table(value)
@@ -871,7 +871,7 @@ function t.values(check): check
 			return false, tableErrMsg or ""
 		end
 
-		for key, val in pairs(value) do
+		for key, val in value do
 			local success, errMsg = check(val)
 			if success == false then
 				return false, string.format("bad value for key %s:\n\t%s", tostring(key), errMsg or "")
@@ -890,7 +890,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.map(keyCheck, valueCheck): check
+function t.map(keyCheck: check, valueCheck: check): check
 	assert(t.callback(keyCheck))
 	assert(t.callback(valueCheck))
 	local keyChecker = t.keys(keyCheck)
@@ -918,7 +918,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.set(valueCheck)
+function t.set(valueCheck: check): check
 	return t.map(valueCheck, t.literal(true))
 end
 
@@ -931,7 +931,7 @@ do
 
 		@returns A function that will return true iff the condition is passed
 	**--]]
-	function t.array(check): check
+	function t.array(check: check): check
 		assert(t.callback(check))
 		local valuesCheck = t.values(check)
 
@@ -942,14 +942,14 @@ do
 			end
 
 			-- # is unreliable for sparse arrays
-			-- Count upwards using ipairs to avoid false positives from the behavior of #
+			-- Count upwards using `for _ in` to avoid false positives from the behavior of #
 			local arraySize = 0
 
-			for _, _ in ipairs(value) do
+			for _ in value do
 				arraySize = arraySize + 1
 			end
 
-			for key in pairs(value) do
+			for key in value do
 				if key < 1 or key > arraySize then
 					return false, string.format("[array] key %s must be sequential", tostring(key))
 				end
@@ -986,7 +986,7 @@ do
 				return false, string.format("[strictArray] Array size exceeds limit of %d", #valueTypes)
 			end
 
-			for idx, typeFn in pairs(valueTypes) do
+			for idx, typeFn in valueTypes do
 				local typeSuccess, typeErrMsg = typeFn(value[idx])
 				if not typeSuccess then
 					return false, string.format("[strictArray] Array index #%d - %s", idx, typeErrMsg)
@@ -1012,7 +1012,7 @@ do
 		assert(callbackArray(checks))
 
 		return function(value)
-			for _, check in ipairs(checks) do
+			for _, check in checks do
 				if check(value) then
 					return true, nil
 				end
@@ -1034,12 +1034,12 @@ do
 
 		@returns A function that will return true iff the condition is passed
 	**--]]
-	function t.intersection(...): check
+	function t.intersection(...: check): check
 		local checks = { ... }
 		assert(callbackArray(checks))
 
 		return function(value)
-			for _, check in ipairs(checks) do
+			for _, check in checks do
 				local success, errMsg = check(value)
 				if not success then
 					return false, errMsg or ""
@@ -1073,7 +1073,7 @@ do
 				return false, tableErrMsg or ""
 			end
 
-			for key, check in pairs(checkTable) do
+			for key, check in checkTable do
 				local success, errMsg = check(value[key])
 				if success == false then
 					return false, string.format("[interface] bad value for %s:\n\t%s", tostring(key), errMsg or "")
@@ -1099,14 +1099,14 @@ do
 				return false, tableErrMsg or ""
 			end
 
-			for key, check in pairs(checkTable) do
+			for key, check in checkTable do
 				local success, errMsg = check(value[key])
 				if success == false then
 					return false, string.format("[interface] bad value for %s:\n\t%s", tostring(key), errMsg or "")
 				end
 			end
 
-			for key in pairs(value) do
+			for key in value do
 				if not checkTable[key] then
 					return false, string.format("[interface] unexpected field %q", tostring(key))
 				end
@@ -1200,7 +1200,7 @@ end
 
 	@returns A function that will return true iff the condition is passed
 **--]]
-function t.enum(enum): check
+function t.enum(enum: any): check
 	assert(t.Enum(enum))
 	return function(value)
 		local enumItemSuccess, enumItemErrMsg = t.EnumItem(value)
@@ -1243,7 +1243,7 @@ end
 
 	@returns A function that simply wraps the given check in an assert
 **--]]
-function t.strict(check)
+function t.strict(check: check)
 	return function(...)
 		assert(check(...))
 	end
@@ -1274,7 +1274,7 @@ do
 			assert(typeof(value) == "Instance", "t.Instance returned true for non-Instance value")
 
 			local childrenByName = {}
-			for _, child in ipairs(value:GetChildren()) do
+			for _, child in value:GetChildren() do
 				local name = child.Name
 				if checkTable[name] then
 					if childrenByName[name] then
@@ -1285,7 +1285,7 @@ do
 				end
 			end
 
-			for name, check in pairs(checkTable) do
+			for name, check in checkTable do
 				local success, errMsg = check(childrenByName[name])
 				if not success then
 					return false, string.format("[%s.%s] %s", value:GetFullName(), name, errMsg or "")

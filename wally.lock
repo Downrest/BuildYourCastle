@@ -23,9 +23,14 @@ version = "0.4.1"
 dependencies = []
 
 [[package]]
+name = "data-oriented-house/squash"
+version = "5.0.0"
+dependencies = []
+
+[[package]]
 name = "downr/buildyourcastle"
 version = "0.1.0"
-dependencies = [["Conch", "alicesaidhi/conch@0.4.0-rc.9"], ["ConchUI", "alicesaidhi/conch-ui@0.4.0-rc.9"], ["Lyra", "paradoxum-games/lyra@0.6.0"], ["QNum", "notiku/qnum@0.2.1"], ["Signal", "nowoshire/namedsignal@2.3.2"], ["TypedAttribute", "downrest/typedattribute@1.0.8"], ["TypedEvent", "downrest/typedevent@1.0.4"], ["t", "osyrisrblx/t@3.1.1"]]
+dependencies = [["Conch", "alicesaidhi/conch@0.4.0-rc.9"], ["ConchUI", "alicesaidhi/conch-ui@0.4.0-rc.9"], ["Lyra", "paradoxum-games/lyra@0.6.0"], ["QNum", "notiku/qnum@0.2.1"], ["Signal", "nowoshire/namedsignal@2.3.2"], ["Squash", "data-oriented-house/squash@5.0.0"], ["TypedAttribute", "downrest/typedattribute@1.0.8"], ["TypedEvent", "downrest/typedevent@1.0.4"], ["t", "osyrisrblx/t@3.1.1"]]
 
 [[package]]
 name = "downrest/typedattribute"
