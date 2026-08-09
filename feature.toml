@@ -1,0 +1,5 @@
+client_path = "sync/StarterPlayer/StarterPlayerScripts/GameClient/"
+client_service = "StarterPlayer"
+
+server_path = "sync/ServerScriptService/GameServer/"
+server_service = "ServerScriptService"

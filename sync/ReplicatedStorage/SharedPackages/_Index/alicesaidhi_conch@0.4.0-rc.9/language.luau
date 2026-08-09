@@ -1,0 +1,19 @@
+local REQUIRED_MODULE = require(script.Parent.Parent["alicesaidhi_conch-language@0.4.0-rc.9"]["conch-language"])
+export type LanguageVm = REQUIRED_MODULE.LanguageVm 
+export type TypeAnalysisInfo = REQUIRED_MODULE.TypeAnalysisInfo 
+export type SimpleValue = REQUIRED_MODULE.SimpleValue 
+export type Suggestion = REQUIRED_MODULE.Suggestion 
+export type Metadata = REQUIRED_MODULE.Metadata 
+export type Type = REQUIRED_MODULE.Type 
+export type LiteralType = REQUIRED_MODULE.LiteralType 
+export type StrangeType = REQUIRED_MODULE.StrangeType 
+export type UnionType = REQUIRED_MODULE.UnionType 
+export type IntersectionType = REQUIRED_MODULE.IntersectionType 
+export type TableType = REQUIRED_MODULE.TableType 
+export type FunctionType = REQUIRED_MODULE.FunctionType 
+export type CommandType = REQUIRED_MODULE.CommandType 
+export type CommandArgument = REQUIRED_MODULE.CommandArgument 
+export type AnalysisResult = REQUIRED_MODULE.AnalysisResult 
+export type InputState = REQUIRED_MODULE.InputState 
+export type LanguageInterface = REQUIRED_MODULE.LanguageInterface 
+return REQUIRED_MODULE

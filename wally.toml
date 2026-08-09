@@ -1,0 +1,15 @@
+[package]
+name = "downr/buildyourcastle"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Lyra = "paradoxum-games/lyra@0.6.0"
+t = "osyrisrblx/t@3.1.1"
+TypedEvent = "downrest/typedevent@1.0.4"
+TypedAttribute = "downrest/typedattribute@1.0.8"
+Signal = "nowoshire/namedsignal@2.3.2"
+QNum = "notiku/qnum@0.2.1"
+Conch = "alicesaidhi/conch@0.4.0-rc.9"
+ConchUI = "alicesaidhi/conch-ui@0.4.0-rc.9"

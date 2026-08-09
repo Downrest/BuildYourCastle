@@ -1,0 +1,19 @@
+local main = require("./src")
+export type LanguageVm = main. LanguageVm 
+export type TypeAnalysisInfo = main. TypeAnalysisInfo 
+export type SimpleValue = main. SimpleValue 
+export type Suggestion = main. Suggestion 
+export type Metadata = main. Metadata 
+export type Type = main. Type 
+export type LiteralType = main. LiteralType 
+export type StrangeType = main. StrangeType 
+export type UnionType = main. UnionType 
+export type IntersectionType = main. IntersectionType 
+export type TableType = main. TableType 
+export type FunctionType = main. FunctionType 
+export type CommandType = main. CommandType 
+export type CommandArgument = main. CommandArgument 
+export type AnalysisResult = main. AnalysisResult 
+export type InputState = main. InputState 
+export type LanguageInterface = main. LanguageInterface 
+return main

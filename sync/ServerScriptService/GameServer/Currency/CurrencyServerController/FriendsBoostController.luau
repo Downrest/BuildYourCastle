@@ -1,0 +1,3 @@
+local FriendsBoostController = {}
+
+return FriendsBoostController
