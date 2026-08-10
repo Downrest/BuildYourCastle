@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local CurrencyServerService = require(ServerScriptService.ServerServices.CurrencyServerService)
 local CurrencySharedService = require(ReplicatedStorage.SharedServices.CurrencySharedService)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 
@@ -24,7 +25,7 @@ local function replicateGoldCurrency(
 end
 
 function CurrencyServerController.Init()
-    DataServerService.DataChanged:Connect(function(
+    DataServerService.PlayerDataChanged:Connect(function(
         player,
         newData,
         oldData
@@ -34,12 +35,15 @@ function CurrencyServerController.Init()
 
     --TODO: test
     do
-        while true do
-            for _, player in Players:GetPlayers() do
-                DataServerService.SetGold(player, DataServerService.GetPlayerData(player).currency.gold - 100)
-            end
-            task.wait(1)
-        end
+       while true do
+           for _, player in Players:GetPlayers() do
+               CurrencyServerService.SetGold(
+                player, 
+                CurrencyServerService.GetGold(player) - 100
+            )
+           end
+           task.wait(1)
+       end
     end
 end
 

@@ -8,6 +8,7 @@ export type CastleData = DataServerService.CastleData
 export type CastleCache = {
     owner: Player?;
     castleData: CastleData?;
+    castleID: number;
 }
 
 CastleServerService.CastleCache = {}:: {CastleCache}
@@ -15,8 +16,9 @@ CastleServerService.CastleCache = {}:: {CastleCache}
 local MAX_CASTLES = 4
 
 local function getPlayerCastleCache(player: Player): CastleCache?
-    local castleCache = CastleServerService.CastleCache[1]; do
-        local currentIndex = 0
+    local currentIndex = 1
+
+    local castleCache = CastleServerService.CastleCache[currentIndex]; do
         while castleCache.owner ~= player do
             currentIndex += 1
             castleCache = CastleServerService.CastleCache[currentIndex]
@@ -27,9 +29,12 @@ local function getPlayerCastleCache(player: Player): CastleCache?
 end
 
 local function getVacantCastleCache(): CastleCache?
-    local vacantCastle = CastleServerService.CastleCache[1]; do
-        local currentIndex = 0
-        while not vacantCastle.owner do
+    local currentIndex = 1
+
+    warn(CastleServerService.CastleCache)
+
+    local vacantCastle = CastleServerService.CastleCache[currentIndex]; do
+        while vacantCastle["owner"] do
             currentIndex += 1
             vacantCastle = CastleServerService.CastleCache[currentIndex]
         end
@@ -39,12 +44,27 @@ local function getVacantCastleCache(): CastleCache?
 end
 
 function CastleServerService.Init()
-    for i = 1, MAX_CASTLES do
-        CastleServerService.CastleCache = {
-            owner = nil;
-            castleData = nil;
-        }
+    -- initializing castle cache
+    do
+        for i = 1, MAX_CASTLES do
+            table.insert(
+                CastleServerService.CastleCache,
+                {
+                    owner = nil;
+                    castleData = nil;
+                    castleID = i;
+                }
+            )
+        end
     end
+end
+
+function CastleServerService.GetPlayerCastleCache(player: Player): CastleCache?
+    return getPlayerCastleCache(player)
+end
+
+function CastleServerService.GetCastleCaches(): {CastleCache}
+    return CastleServerService.CastleCache
 end
 
 function CastleServerService.GetPlayerCastleData(player: Player): CastleData

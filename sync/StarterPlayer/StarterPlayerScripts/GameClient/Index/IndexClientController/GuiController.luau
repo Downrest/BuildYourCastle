@@ -176,6 +176,7 @@ end
 
 function GuiController.Mount()
     do
+        indexGui.Enabled = true
         indexContainer.Position = INDEX_CONTAINER_DEFOCUS_POSITION
     end
 
@@ -221,6 +222,7 @@ function GuiController.Mount()
 end
 
 function GuiController.Dismount()
+    indexGui.Enabled = false
 	CleanupUtil.Clean(guiBin)
 end
 

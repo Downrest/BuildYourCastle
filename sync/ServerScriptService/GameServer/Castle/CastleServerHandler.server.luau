@@ -1,5 +1,8 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local Castle = require(ServerScriptService.GameServer.Castle.CastleServerController)
+local CastleServerController = require(ServerScriptService.GameServer.Castle.CastleServerController)
+local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 
-Castle.Init()
+DataServerService.DataServiceInitialized:Once(function()
+    CastleServerController.Init()
+end)

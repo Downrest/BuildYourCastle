@@ -22,7 +22,12 @@ export type PlayerData = {
     castle: CastleData;
 }
 
-DataServerService.DataChanged = Signal.new<<(player: Player, newData: PlayerData, oldData: PlayerData?) -> ()>>()
+DataServerService.DataServiceInitialized = Signal.new()
+DataServerService.PlayerDataChanged = Signal.new<<(player: Player, newData: PlayerData, oldData: PlayerData?) -> ()>>()
+DataServerService.PlayerDataLoaded = Signal.new<<(player: Player) -> ()>>()
+DataServerService.PlayerDataReleased = Signal.new<<(player: Player) -> ()>>()
+
+DataServerService.PlayersLoaded = {}:: {Player}
 
 local playerStore = Lyra.createPlayerStore<<PlayerData>>({
     name = "PlayerData";
@@ -53,7 +58,7 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
                 return
             end
 
-            DataServerService.DataChanged:Fire(player, newData, oldData)
+            DataServerService.PlayerDataChanged:Fire(player, newData, oldData)
         end;
     };
     
@@ -78,23 +83,85 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
     -- end;
 })
 
+local dataLoadedCallbacks = {}:: {[Player]: {() -> ()}}
+
+local function playerAdded(player: Player)
+    dataLoadedCallbacks[player] = {}
+
+    warn(`ADDED PLAYER... `, dataLoadedCallbacks)
+    playerStore:loadAsync(player)
+
+    do
+        DataServerService.PlayerDataLoaded:Fire(player)
+        table.insert(DataServerService.PlayersLoaded, player)
+    end
+end
+
+local function playerRemoving(player: Player)
+    dataLoadedCallbacks[player] = nil
+    playerStore:unloadAsync(player)
+
+    do
+        DataServerService.PlayerDataReleased:Fire(player)
+        table.remove(
+            DataServerService.PlayersLoaded, 
+            table.find(
+                DataServerService.PlayersLoaded, 
+                player
+            )
+        )
+    end
+end
+
 function DataServerService.Init()
     -- client handshake, "im ready for data replication!"
     DataSharedService.ClientDataReady.server.OnServerEvent:Connect(function(player)
-        DataServerService.DataChanged:Fire(player, playerStore:getAsync(player))
+        DataServerService.PlayerDataChanged:Fire(player, playerStore:getAsync(player))
+    end)
+    
+    -- load data loaded callbacks
+    DataServerService.PlayerDataLoaded:Connect(function(player)
+        for _, callback in dataLoadedCallbacks[player] do
+            callback()
+        end
     end)
 
-    Players.PlayerAdded:Connect(function(player)
-        playerStore:loadAsync(player)
-    end)
+    -- player added
+    do
+        for _, player in Players:GetPlayers() do
+            playerAdded(player)
+        end
+        Players.PlayerAdded:Connect(function(player)
+            playerAdded(player)
+        end)
+    end
 
+    -- player removing
     Players.PlayerRemoving:Connect(function(player)
-        playerStore:unloadAsync(player)
+        playerRemoving(player)
     end)
 
     game:BindToClose(function()
         playerStore:closeAsync()
     end)
+
+    DataServerService.DataServiceInitialized:Fire()
+end
+
+function DataServerService.IsPlayerDataLoaded(player: Player): boolean
+    return (table.find(DataServerService.PlayersLoaded, player) ~= nil)
+end
+
+function DataServerService.OnPlayerDataLoaded(player: Player, loadedCallback: () -> ())
+    if DataServerService.IsPlayerDataLoaded(player) then
+        loadedCallback()
+    else
+        if not dataLoadedCallbacks[player] then
+            dataLoadedCallbacks[player] = {}
+        end
+
+        table.insert(dataLoadedCallbacks[player], loadedCallback)
+    end
 end
 
 function DataServerService.GetPlayerData(player: Player): PlayerData

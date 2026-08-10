@@ -5,42 +5,55 @@ local TypedEvent = require(ReplicatedStorage.SharedPackages.TypedEvent)
 
 local CastleSharedService = {}
 
-export type CastleReplication = {string}
+export type BatchedCastleReplication = {CastleReplication}
+export type CastleReplication = {
+    castleID: number;
+    unlockedStructures: {string};
+}
+
+local sharedAssets = ReplicatedStorage.SharedAssets
+local castleAssets = sharedAssets.Castle
+local castleIslandModel = castleAssets.CastleIsland
+local castleProgressions = castleAssets.Progression
 
 CastleSharedService.STRUCTURE_NAMES = {
 	Pathway1 = "Pathway1";
 }
+CastleSharedService.STRUCTURE_NAME_TO_ASSET = {
+    [CastleSharedService.STRUCTURE_NAMES.Pathway1] = castleProgressions["1. Pathway (10)"];
+}
+CastleSharedService.ISLAND_ASSET = castleIslandModel
 
 CastleSharedService.ClientReplicationReady =
     TypedEvent.newReliable("ClientReplicationReady"):: TypedEvent.ClientToServer<any>
 
 CastleSharedService.ReplicationPacket =
-    TypedEvent.newReliable("ReplicationPacket"):: TypedEvent.ServerToClient<(replicatedBuffer: buffer) -> ()>
+    TypedEvent.newReliable("IslandReplicationPacket"):: TypedEvent.ServerToClient<(replicationBuffer: buffer) -> ()>
 
-function CastleSharedService.SerializeCastleReplication(castleReplication: CastleReplication): buffer
+--[[
+    THE REPLICATION FORMAT IS AS FOLLOWS:
+
+    `castleID` denotes the castle type to place structures in (client renders castle type if not existing yet)
+    `unlockedStructures` denotes the structures in that castle type to be rendered
+]]
+local castleReplicationSerde = Squash.record({
+    castleID = Squash.T(Squash.i8());
+    unlockedStructures = Squash.T(Squash.array(Squash.string()));
+})
+local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
+
+function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: BatchedCastleReplication): buffer
     local cursor = Squash.cursor()
 
-    for _, unlockedStructureName in castleReplication do
-        Squash.string().ser(cursor, unlockedStructureName)
-    end
-    Squash.vlq().ser(cursor, #castleReplication)
+    batchCastleReplicationSerde.ser(cursor, batchCastleReplication)
 
     return Squash.tobuffer(cursor)
 end
 
-function CastleSharedService.DeserializeCastleReplication(replicationBuffer: buffer): CastleReplication
-    local cursor = Squash.frombuffer(replicationBuffer)
-    local castleReplication = {}
+function CastleSharedService.DeserializeReplicationPacket(batchCastleReplication: buffer): BatchedCastleReplication
+    local cursor = Squash.frombuffer(batchCastleReplication)
 
-    local unlockedStructureAmount = Squash.vlq().des(cursor)
-    for index = unlockedStructureAmount, 1, -1 do
-        table.insert(
-            castleReplication, 
-            Squash.string().des(cursor)
-        )
-    end
-
-    return castleReplication
+    return batchCastleReplicationSerde.des(cursor)
 end
 
 return CastleSharedService
