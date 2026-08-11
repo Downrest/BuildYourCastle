@@ -31,8 +31,6 @@ end
 local function getVacantCastleCache(): CastleCache?
     local currentIndex = 1
 
-    warn(CastleServerService.CastleCache)
-
     local vacantCastle = CastleServerService.CastleCache[currentIndex]; do
         while vacantCastle["owner"] do
             currentIndex += 1
@@ -41,6 +39,17 @@ local function getVacantCastleCache(): CastleCache?
     end
 
     return vacantCastle
+end
+
+local function getPlayerCastleData(player: Player): CastleData
+    local playerCastleCache = getPlayerCastleCache(player)
+    local castleData = playerCastleCache and playerCastleCache.castleData; do
+        if not castleData then
+            castleData = DataServerService.GetPlayerDataAsync(player).castle
+        end
+    end
+
+    return castleData:: DataServerService.CastleData
 end
 
 function CastleServerService.Init()
@@ -67,24 +76,13 @@ function CastleServerService.GetCastleCaches(): {CastleCache}
     return CastleServerService.CastleCache
 end
 
-function CastleServerService.GetPlayerCastleData(player: Player): CastleData
-    local playerCastleCache = getPlayerCastleCache(player)
-    local castleData = playerCastleCache and playerCastleCache.castleData; do
-        if not castleData then
-            castleData = DataServerService.GetPlayerData(player).castle
-        end
-    end
-
-    return castleData:: DataServerService.CastleData
-end
-
 function CastleServerService.AddPlayerCastle(player: Player): CastleCache
     local vacantCastle = getVacantCastleCache()
     assert(vacantCastle, "Attempted to add player castle when all castles are already occupied?")
 
     do
         vacantCastle.owner = player
-        vacantCastle.castleData = CastleServerService.GetPlayerCastleData(player)
+        vacantCastle.castleData = getPlayerCastleData(player)
     end
 
     return vacantCastle

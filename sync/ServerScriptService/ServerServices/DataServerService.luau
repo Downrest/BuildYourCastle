@@ -9,16 +9,17 @@ local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedSer
 
 local DataServerService = {}
 
+export type CurrencyData = {
+    gold: number;
+}
 export type CastleData = {
     popularity: number;
     unlockedButtons: {
-        [string]: boolean;
+        [string]: {boolean};
     }
 }
 export type PlayerData = {
-    currency: {
-        gold: number;
-    };
+    currency: CurrencyData;
     castle: CastleData;
 }
 
@@ -26,8 +27,6 @@ DataServerService.DataServiceInitialized = Signal.new()
 DataServerService.PlayerDataChanged = Signal.new<<(player: Player, newData: PlayerData, oldData: PlayerData?) -> ()>>()
 DataServerService.PlayerDataLoaded = Signal.new<<(player: Player) -> ()>>()
 DataServerService.PlayerDataReleased = Signal.new<<(player: Player) -> ()>>()
-
-DataServerService.PlayersLoaded = {}:: {Player}
 
 local playerStore = Lyra.createPlayerStore<<PlayerData>>({
     name = "PlayerData";
@@ -38,7 +37,10 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         castle = {
             popularity = 0;
             unlockedButtons = {
-                [CastleSharedService.STRUCTURE_NAMES.Pathway1] = false;
+                --[[
+                    [structureName -> string]: {isPurchaseable -> boolean, isUnlocked -> boolean}
+                ]]
+                [CastleSharedService.STRUCTURE_NAMES.Pathway1] = {true, false};
             };
         };
     };
@@ -48,7 +50,10 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         });
         castle = t.strictInterface({
             popularity = t.number;
-            unlockedButtons = t.values(t.boolean);
+            unlockedButtons = t.map(
+                t.string,
+                t.array(t.boolean)
+            );
         })
     });
     changedCallbacks = {
@@ -83,31 +88,46 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
     -- end;
 })
 
-local dataLoadedCallbacks = {}:: {[Player]: {() -> ()}}
+local playersLoaded = {}:: {Player}
+local isInitialized = false
+
+local serviceInitializedCallbacks = {}:: {() -> ()}
+local playerDataInitalizedCallbacks = {}:: {[Player]: {() -> ()}}
 
 local function playerAdded(player: Player)
-    dataLoadedCallbacks[player] = {}
+    -- sometimes, certain callbacks can trigger before playerAdded() runs here
+    if not playerDataInitalizedCallbacks[player] then
+        playerDataInitalizedCallbacks[player] = {}
+    end
     playerStore:loadAsync(player)
 
     do
         DataServerService.PlayerDataLoaded:Fire(player)
-        table.insert(DataServerService.PlayersLoaded, player)
+        table.insert(playersLoaded, player)
     end
 end
 
 local function playerRemoving(player: Player)
-    dataLoadedCallbacks[player] = nil
+    playerDataInitalizedCallbacks[player] = nil
     playerStore:unloadAsync(player)
 
     do
         DataServerService.PlayerDataReleased:Fire(player)
         table.remove(
-            DataServerService.PlayersLoaded, 
+            playersLoaded, 
             table.find(
-                DataServerService.PlayersLoaded, 
+                playersLoaded, 
                 player
             )
         )
+    end
+end
+
+local function executeSpawnedCallbacks(callbackList: {() -> ()})
+    for _, callback in callbackList do
+        task.spawn(function()
+            callback()
+        end)
     end
 end
 
@@ -119,9 +139,7 @@ function DataServerService.Init()
     
     -- load data loaded callbacks
     DataServerService.PlayerDataLoaded:Connect(function(player)
-        for _, callback in dataLoadedCallbacks[player] do
-            callback()
-        end
+        executeSpawnedCallbacks(playerDataInitalizedCallbacks[player])
     end)
 
     -- player added
@@ -143,30 +161,48 @@ function DataServerService.Init()
         playerStore:closeAsync()
     end)
 
-    DataServerService.DataServiceInitialized:Fire()
-end
+    -- execute service initialized
+    do
+        DataServerService.DataServiceInitialized:Fire()
+        isInitialized = true
 
-function DataServerService.IsPlayerDataLoaded(player: Player): boolean
-    return (table.find(DataServerService.PlayersLoaded, player) ~= nil)
-end
-
-function DataServerService.OnPlayerDataLoaded(player: Player, loadedCallback: () -> ())
-    if DataServerService.IsPlayerDataLoaded(player) then
-        loadedCallback()
-    else
-        if not dataLoadedCallbacks[player] then
-            dataLoadedCallbacks[player] = {}
-        end
-
-        table.insert(dataLoadedCallbacks[player], loadedCallback)
+        executeSpawnedCallbacks(serviceInitializedCallbacks) 
     end
 end
 
-function DataServerService.GetPlayerData(player: Player): PlayerData
+function DataServerService.IsServiceInitialized(): boolean
+    return isInitialized
+end
+
+function DataServerService.OnServiceInitialized(initializedCallback: () -> ())
+    if DataServerService.IsServiceInitialized() then
+        initializedCallback()
+    else
+        table.insert(serviceInitializedCallbacks, initializedCallback)
+    end
+end
+
+function DataServerService.IsPlayerDataInitialized(player: Player): boolean
+    return (table.find(playersLoaded, player) ~= nil)
+end
+
+function DataServerService.OnPlayerDataInitialized(player: Player, loadedCallback: () -> ())
+    if DataServerService.IsPlayerDataInitialized(player) then
+        loadedCallback()
+    else
+        if not playerDataInitalizedCallbacks[player] then
+            playerDataInitalizedCallbacks[player] = {}
+        end
+
+        table.insert(playerDataInitalizedCallbacks[player], loadedCallback)
+    end
+end
+
+function DataServerService.GetPlayerDataAsync(player: Player): PlayerData
     return playerStore:getAsync(player)
 end
 
-function DataServerService.SetPlayerData(player: Player, setCallback: (data: PlayerData) -> boolean)
+function DataServerService.SetPlayerDataAsync(player: Player, setCallback: (data: PlayerData) -> boolean)
     playerStore:updateAsync(player, function(data)
         return setCallback(data)
     end)

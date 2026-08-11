@@ -223,6 +223,9 @@ local function createStore<T>(config: StoreConfig<T>): Store<T>
 	})
 
 	logger:log("debug", `creating store`)
+	
+	--TODO: TEST
+	config.useMock = true
 
 	-- Determine which DataStoreService implementation to use (real, mock, or custom).
 	local dataStoreService = config.dataStoreService

@@ -32,6 +32,8 @@ export type CastleRender = {
 local castleRenderCache = {}:: {[number]: CastleRender}
 
 function ReplicationController.RenderCastleReplication(castleReplication: CastleSharedService.CastleReplication)
+    warn(`REPLICATING... `, castleReplication)
+
     local castleRender: CastleRender = castleRenderCache[castleReplication.castleID]
     if not castleRender then
         -- cache castle render data + render island if necessary
@@ -54,7 +56,7 @@ function ReplicationController.RenderCastleReplication(castleReplication: Castle
 
     -- render structures
     do
-        for _, unlockedStructureID in castleReplication.unlockedStructures do
+        for unlockedStructureID, isUnlocked in castleReplication.unlockedStructures do
             local STRUCTURE_ASSET = CastleSharedService.STRUCTURE_NAME_TO_ASSET[unlockedStructureID]
             
             local structureModel = STRUCTURE_ASSET:Clone(); do
@@ -66,6 +68,7 @@ function ReplicationController.RenderCastleReplication(castleReplication: Castle
 end
 
 function ReplicationController.Init()
+    warn("YEAH CLIENT IS READY FOR REPLICATION")
     CastleSharedService.ClientReplicationReady.client:FireServer()
 
     CastleSharedService.ReplicationPacket.client.OnClientEvent:Connect(function(

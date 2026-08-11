@@ -5,12 +5,6 @@ local TypedEvent = require(ReplicatedStorage.SharedPackages.TypedEvent)
 
 local CastleSharedService = {}
 
-export type BatchedCastleReplication = {CastleReplication}
-export type CastleReplication = {
-    castleID: number;
-    unlockedStructures: {string};
-}
-
 local sharedAssets = ReplicatedStorage.SharedAssets
 local castleAssets = sharedAssets.Castle
 local castleIslandModel = castleAssets.CastleIsland
@@ -34,11 +28,28 @@ CastleSharedService.ReplicationPacket =
     THE REPLICATION FORMAT IS AS FOLLOWS:
 
     `castleID` denotes the castle type to place structures in (client renders castle type if not existing yet)
-    `unlockedStructures` denotes the structures in that castle type to be rendered
+    `unlockedStructures` denotes the structures in that castle type to be rendered, 
+        L>  {
+                [structureName -> string]: isUnlocked -> boolean
+            }
 ]]
+export type BatchedCastleReplication = {CastleReplication}
+export type CastleReplication = {
+    castleID: number;
+    --[[
+        {[structureName -> string]: isUnlocked -> boolean}
+    ]]
+    unlockedStructures: {[string]: boolean};
+}
+
 local castleReplicationSerde = Squash.record({
     castleID = Squash.T(Squash.i8());
-    unlockedStructures = Squash.T(Squash.array(Squash.string()));
+    unlockedStructures = Squash.T(
+        Squash.map<<string, boolean>>(
+            Squash.string(),
+            Squash.literal(false)
+        )
+    );
 })
 local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
 

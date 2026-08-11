@@ -32,19 +32,6 @@ function CurrencyServerController.Init()
     )
         replicateGoldCurrency(player, newData, oldData)
     end)
-
-    --TODO: test
-    do
-       while true do
-           for _, player in Players:GetPlayers() do
-               CurrencyServerService.SetGold(
-                player, 
-                CurrencyServerService.GetGold(player) - 100
-            )
-           end
-           task.wait(1)
-       end
-    end
 end
 
 return CurrencyServerController

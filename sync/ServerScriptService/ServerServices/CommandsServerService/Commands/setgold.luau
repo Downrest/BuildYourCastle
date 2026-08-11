@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local CommandsServerService = require(ServerScriptService.ServerServices.CommandsServerService)
-local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
+local CurrencyServerService = require(ServerScriptService.ServerServices.CurrencyServerService)
 local Conch = require(ReplicatedStorage.SharedPackages.Conch)
 
 return function()
@@ -15,7 +15,7 @@ return function()
 				Conch.args.number()
 		end;
 		callback = function(player, goldAmount)
-			DataServerService.SetGold(player, goldAmount)
+			CurrencyServerService.SetGoldAsync(player, goldAmount)
 		end;
 	})
 end

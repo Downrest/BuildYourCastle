@@ -20,12 +20,13 @@ local function castleCacheToReplication(castleCache: CastleServerService.CastleC
         unlockedStructures = {};
     }; do
         if castleCache["castleData"] then
-            for structureName, isPurchased in castleCache.castleData.unlockedButtons do
-                if not isPurchased then
+            for structureName, booleanData in castleCache.castleData.unlockedButtons do
+                local isPurchaseable, isUnlocked = booleanData[1], booleanData[2]
+                if not isPurchaseable then
                     continue
                 end
-    
-                table.insert(castleReplication.unlockedStructures, structureName)
+
+                castleReplication.unlockedStructures[structureName] = isUnlocked
             end
         end
     end
@@ -34,7 +35,7 @@ local function castleCacheToReplication(castleCache: CastleServerService.CastleC
 end
 
 local function replicateCastlesToNewPlayer(player: Player)
-    DataServerService.OnPlayerDataLoaded(player, function()
+    DataServerService.OnPlayerDataInitialized(player, function()
         for _, castleCache in CastleServerService.GetCastleCaches() do
             local castleReplication = castleCacheToReplication(castleCache)
 
@@ -44,7 +45,7 @@ local function replicateCastlesToNewPlayer(player: Player)
 end
 
 local function addPlayerCastle(player: Player)
-    DataServerService.OnPlayerDataLoaded(player, function()
+    DataServerService.OnPlayerDataInitialized(player, function()
         local castleCache = CastleServerService.AddPlayerCastle(player)
         local castleReplication = castleCacheToReplication(castleCache)
 

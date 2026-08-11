@@ -4,15 +4,15 @@ local DataServerService = require(ServerScriptService.ServerServices.DataServerS
 
 local CurrencyServerService = {}
 
-function CurrencyServerService.SetGold(player: Player, goldAmount: number)
-    DataServerService.SetPlayerData(player, function(data)
+function CurrencyServerService.SetGoldAsync(player: Player, goldAmount: number)
+    DataServerService.SetPlayerDataAsync(player, function(data)
         data.currency.gold = goldAmount
         return true
     end)
 end
 
-function CurrencyServerService.GetGold(player: Player): number
-    local playerData = DataServerService.GetPlayerData(player)
+function CurrencyServerService.GetGoldAsync(player: Player): number
+    local playerData = DataServerService.GetPlayerDataAsync(player)
 
     return playerData.currency.gold
 end
