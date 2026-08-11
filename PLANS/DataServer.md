@@ -1,3 +1,0 @@
-DataServerService handles datastore, but each feature must have its own service that acts as a middleground between setting/getting certain data. it only makes sense
-
-in other words... let DataServerService expose mere methods such as GetPlayerData() and SetPlayerData(). its up to each service to deal the data that THEY want to deal with, rather than filling up DataServerService with ad infinitum lines
