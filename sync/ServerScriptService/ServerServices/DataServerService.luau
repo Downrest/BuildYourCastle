@@ -87,8 +87,6 @@ local dataLoadedCallbacks = {}:: {[Player]: {() -> ()}}
 
 local function playerAdded(player: Player)
     dataLoadedCallbacks[player] = {}
-
-    warn(`ADDED PLAYER... `, dataLoadedCallbacks)
     playerStore:loadAsync(player)
 
     do

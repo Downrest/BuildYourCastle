@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
+local ReplicationController = require(script.ReplicationController)
 
 local CastleServerController = {}
 
@@ -32,32 +33,27 @@ local function castleCacheToReplication(castleCache: CastleServerService.CastleC
     return castleReplication
 end
 
-local function sendCastleReplication(player: Player, batchCastleReplication: CastleSharedService.BatchedCastleReplication)
-    CastleSharedService.ReplicationPacket.server:FireClient(
-        player,
-        CastleSharedService.SerializeReplicationPacket(batchCastleReplication)
-    )
-end
-
 local function replicateCastlesToNewPlayer(player: Player)
     DataServerService.OnPlayerDataLoaded(player, function()
-        local batchedCastles = {}
-
         for _, castleCache in CastleServerService.GetCastleCaches() do
-            table.insert(batchedCastles, castleCacheToReplication(castleCache))
-        end
+            local castleReplication = castleCacheToReplication(castleCache)
 
-        sendCastleReplication(player, batchedCastles)
+            ReplicationController.PushReplicationToQueue(castleReplication)
+        end
     end)
 end
 
 local function addPlayerCastle(player: Player)
     DataServerService.OnPlayerDataLoaded(player, function()
-        CastleServerService.AddPlayerCastle(player)
+        local castleCache = CastleServerService.AddPlayerCastle(player)
+        local castleReplication = castleCacheToReplication(castleCache)
+
+        ReplicationController.PushReplicationToQueue(castleReplication)
     end)
 end
 
 function CastleServerController.Init()
+    ReplicationController.InitStep()
     CastleServerService.Init()
 
     do

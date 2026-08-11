@@ -2,5 +2,3 @@ CastleServerService would ofc hold all the data for how much each progression wo
 
 1) itll attempt to check if player actually has enough money to purchase it thru CurrencyServerService
 2) if success, subtract money thru CurrenyServerService and tick that certain progression as unlocked in DataServerService thru its own methods, also add the progression in internal cache of castle data
-
-but ofc, itd be CastleServerController who will listen for the client request, then fire AttemptProgressionPurchase() for that player

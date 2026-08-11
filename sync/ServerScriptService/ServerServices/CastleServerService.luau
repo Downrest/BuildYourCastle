@@ -78,7 +78,7 @@ function CastleServerService.GetPlayerCastleData(player: Player): CastleData
     return castleData:: DataServerService.CastleData
 end
 
-function CastleServerService.AddPlayerCastle(player: Player)
+function CastleServerService.AddPlayerCastle(player: Player): CastleCache
     local vacantCastle = getVacantCastleCache()
     assert(vacantCastle, "Attempted to add player castle when all castles are already occupied?")
 
@@ -86,6 +86,8 @@ function CastleServerService.AddPlayerCastle(player: Player)
         vacantCastle.owner = player
         vacantCastle.castleData = CastleServerService.GetPlayerCastleData(player)
     end
+
+    return vacantCastle
 end
 
 return CastleServerService
