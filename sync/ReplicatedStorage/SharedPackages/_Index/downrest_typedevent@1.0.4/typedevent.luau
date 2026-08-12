@@ -11,31 +11,47 @@ export type Event<
 export type ClientToServer<signature = Types.DefaultSignature> = Types.ClientToServer<signature>
 export type ServerToClient<signature = Types.DefaultSignature> = Types.ServerToClient<signature>
 
+local IS_CLIENT = RunService:IsClient()
+
 local function assertClient()
-	assert(RunService:IsClient(), "Attempted to run client-only function!")
+	assert(IS_CLIENT, "Attempted to run client-only function!")
 end
 
 local function assertServer()
-	assert(RunService:IsServer(), "Attempted to run server-only function!")
+	assert(not IS_CLIENT, "Attempted to run server-only function!")
 end
 
 local function getReliableEvent(name: string): RemoteEvent
-	local event = script:FindFirstChild(name)
-	if not event then -- allowing client/server boundary to access the same instance
-		event = Instance.new("RemoteEvent")
-		event.Name = name
-		event.Parent = script
+	local event
+	
+	if IS_CLIENT then
+		event = script:WaitForChild(name)
+	else
+		event = script:FindFirstChild(name); do
+			if not event then
+				event = Instance.new("RemoteEvent")
+				event.Name = name
+				event.Parent = script
+			end
+		end
 	end
 
 	return (event:: RemoteEvent)
 end
 
 local function getUnreliableEvent(name: string): UnreliableRemoteEvent
-	local event = script:FindFirstChild(name)
-	if not event then -- allowing client/server boundary to access the same instance
-		event = Instance.new("UnreliableRemoteEvent")
-		event.Name = name
-		event.Parent = script
+	local event
+
+	if IS_CLIENT then
+		event = script:WaitForChild(name)
+	else
+		event = script:FindFirstChild(name); do
+			if not event then
+				event = Instance.new("UnreliableRemoteEvent")
+				event.Name = name
+				event.Parent = script
+			end
+		end
 	end
 
 	return (event:: UnreliableRemoteEvent)
@@ -86,23 +102,23 @@ local function wrapEvent<
 
 				remoteEvent:FireClient(player, ...)
 			end
-			function self.server.FireAllClients(self: Types.ServerListener, ...)
+			function self.server.FireAllClients(self: Types.ServerFire, ...)
 				assertServer()
 
 				remoteEvent:FireAllClients(...)
 			end
 
-			function self.server.OnServerEvent.Connect(self: Event & Types.PrivateEvent, callback)
+			function self.server.OnServerEvent.Connect(self: Types.ServerListener, callback)
 				assertServer()
 
 				return remoteEvent.OnServerEvent:Connect(callback)
 			end
-			function self.server.OnServerEvent.ConnectParallel(self: Event & Types.PrivateEvent, callback)
+			function self.server.OnServerEvent.ConnectParallel(self: Types.ServerListener, callback)
 				assertServer()
 
 				return remoteEvent.OnServerEvent:ConnectParallel(callback)
 			end
-			function self.server.OnServerEvent.Once(self: Event & Types.PrivateEvent, callback)
+			function self.server.OnServerEvent.Once(self: Types.ServerListener, callback)
 				assertServer()
 
 				return remoteEvent.OnServerEvent:Once(callback)

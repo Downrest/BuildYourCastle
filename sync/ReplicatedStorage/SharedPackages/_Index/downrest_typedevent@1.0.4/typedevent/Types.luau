@@ -104,7 +104,7 @@ export type PrivateEvent = {
 	_remoteEvent: RemoteEvent
 }
 
-export type ClientToServer<signature = DefaultSignature> = Event<signature, any>
-export type ServerToClient<signature = DefaultSignature> = Event<any, signature>
+export type ClientToServer<signature = DefaultSignature> = Event<signature, DefaultSignature>
+export type ServerToClient<signature = DefaultSignature> = Event<DefaultSignature, signature>
 
 return Types

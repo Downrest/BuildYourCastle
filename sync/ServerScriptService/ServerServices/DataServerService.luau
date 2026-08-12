@@ -14,8 +14,18 @@ export type CurrencyData = {
 }
 export type CastleData = {
     popularity: number;
-    unlockedButtons: {
-        [string]: {boolean};
+    --[[
+        [structureID -> string]: {isPurchaseable -> boolean, isUnlocked -> boolean}
+    ]]
+    structureData: {
+        --[[
+            [structureID -> string]
+        ]]
+        [string]: 
+        --[[
+            {isPurchaseable -> boolean, isUnlocked -> boolean}
+        ]]
+            {boolean};
     }
 }
 export type PlayerData = {
@@ -36,10 +46,7 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         };
         castle = {
             popularity = 0;
-            unlockedButtons = {
-                --[[
-                    [structureName -> string]: {isPurchaseable -> boolean, isUnlocked -> boolean}
-                ]]
+            structureData = {
                 [CastleSharedService.STRUCTURE_NAMES.Pathway1] = {true, false};
             };
         };
@@ -50,7 +57,7 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
         });
         castle = t.strictInterface({
             popularity = t.number;
-            unlockedButtons = t.map(
+            structureData = t.map(
                 t.string,
                 t.array(t.boolean)
             );
@@ -202,8 +209,8 @@ function DataServerService.GetPlayerDataAsync(player: Player): PlayerData
     return playerStore:getAsync(player)
 end
 
-function DataServerService.SetPlayerDataAsync(player: Player, setCallback: (data: PlayerData) -> boolean)
-    playerStore:updateAsync(player, function(data)
+function DataServerService.SetPlayerDataAsync(player: Player, setCallback: (data: PlayerData) -> boolean): boolean
+    return playerStore:updateAsync(player, function(data)
         return setCallback(data)
     end)
 end

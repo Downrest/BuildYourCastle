@@ -23,8 +23,15 @@ export type CastleReplication = {
     unlockedStructures: {[string]: boolean};
 }
 
-type StructureRenderData = {
-    asset: any?;
+export type StructureAsset = Model & {
+    Assets: Instance;
+    PurchasePad: {
+        Button: Instance;
+        Hitbox: Instance;
+    };
+}
+export type StructureRenderData = {
+    asset: StructureAsset;
     state: string;
     bin: {CleanupUtil.Trash?};
 }
@@ -34,6 +41,7 @@ export type CastleRender = {
         [string]: StructureRenderData
     };
 }
+
 CastleSharedService.STRUCTURE_NAMES = {
 	Pathway1 = "Pathway1";
 }
@@ -48,17 +56,19 @@ CastleSharedService.STRUCTURE_STATES = {
 CastleSharedService.ClientReplicationReady =
     TypedEvent.newReliable("ClientReplicationReady"):: TypedEvent.ClientToServer<any>
 CastleSharedService.ReplicationPacket =
-    TypedEvent.newReliable("IslandReplicationPacket"):: TypedEvent.ServerToClient<(replicationBuffer: buffer) -> ()>
+    TypedEvent.newReliable("ReplicationPacket"):: TypedEvent.ServerToClient<(replicationBuffer: buffer) -> ()>
 
 CastleSharedService.ClientTouchedStructurePurchase =
-    TypedEvent.newReliable("IslandReplicationPacket"):: TypedEvent.ClientToServer<(structureID: string) -> ()>
+    TypedEvent.newReliable("ClientTouchedStructurePurchase"):: TypedEvent.ClientToServer<(structureID: string) -> ()>
+CastleSharedService.ServerPurchaseStatus =
+    TypedEvent.newReliable("ServerPurchaseStatus"):: TypedEvent.ServerToClient<(purchaseSuccess: boolean) -> ()>
 
 CastleSharedService.StructurePurchaseTouched = 
     Signal.new<<(structureID: string, touchingPlayer: Player) -> ()>>()
 CastleSharedService.StructureRendered = 
-    Signal.new<<(structureRenderData: StructureRenderData, currentState: string) -> ()>>()
+    Signal.new<<(structureAsset: StructureAsset, currentState: string) -> ()>>()
 CastleSharedService.StructureStateChanged = 
-    Signal.new<<(structureRenderData: StructureRenderData, newState: string, oldState: string) -> ()>>()
+    Signal.new<<(structureAsset: StructureAsset, newState: string, oldState: string) -> ()>>()
     
 local ISLAND_ASSET = castleIslandModel
 local CASTLE_ID_DATA = {
@@ -82,9 +92,11 @@ local CASTLE_ID_DATA = {
 local BIN_TAGS = {
     PURCHASE_PAD_TOUCHED = "PurchasePadTouched"
 }
+local PURCHASE_TOUCHED_DEBOUNCE = .5
 
 local renderContainer
 local castleRenderCache = {}:: {[number]: CastleRender}
+local purchaseDebounces = {}:: {[string]: boolean}
 
 --[[
     THE REPLICATION FORMAT IS AS FOLLOWS:
@@ -107,6 +119,8 @@ local castleReplicationSerde = Squash.record({
 local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
 
 function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: BatchedCastleReplication): buffer
+    warn("ATTEMPT TO SERIALIZE!!!! ", batchCastleReplication)
+
     local cursor = Squash.cursor()
 
     batchCastleReplicationSerde.ser(cursor, batchCastleReplication)
@@ -114,8 +128,10 @@ function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: 
     return Squash.tobuffer(cursor)
 end
 
-function CastleSharedService.DeserializeReplicationPacket(batchCastleReplication: buffer): BatchedCastleReplication
-    local cursor = Squash.frombuffer(batchCastleReplication)
+function CastleSharedService.DeserializeReplicationPacket(replicationBuffer: buffer): BatchedCastleReplication
+    warn("ATTEMPT TO DESERIALIZE!!!! ", replicationBuffer)
+
+    local cursor = Squash.frombuffer(replicationBuffer)
 
     return batchCastleReplicationSerde.des(cursor)
 end
@@ -138,86 +154,106 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
     warn(`REPLICATING... `, castleReplication)
     assert(renderContainer, "Attempted to render castle replication without renderContainer!")
 
-    local castleRender = CastleSharedService.GetRenderCastle(castleReplication.castleID)
-    if not castleRender then
-        -- cache castle render data + render island if necessary
-        do
-            local castleCFrame = CASTLE_ID_DATA[castleReplication.castleID].cframe
-            local castleIslandModel = ISLAND_ASSET:Clone(); do
-                castleIslandModel:PivotTo(castleCFrame)
-                castleIslandModel.Parent = renderContainer
+    local castleRender = CastleSharedService.GetRenderCastle(castleReplication.castleID); do
+        if not castleRender then
+            -- cache castle render data + render island if necessary
+            do
+                local castleCFrame = CASTLE_ID_DATA[castleReplication.castleID].cframe
+                local castleIslandModel = ISLAND_ASSET:Clone(); do
+                    castleIslandModel:PivotTo(castleCFrame)
+                    castleIslandModel.Parent = renderContainer
+                end
+    
+                local newCastleRender = {
+                    castleIslandModel = castleIslandModel;
+                    unlockedRenderStructures = {};
+                }
+                castleRenderCache[castleReplication.castleID] = newCastleRender:: CastleRender
+    
+                castleRender = castleRenderCache[castleReplication.castleID]
             end
-
-            local newCastleRender = {
-                castleIslandModel = castleIslandModel;
-                unlockedRenderStructures = {
-                    asset = nil;
-                    bin = {};
-                };
-            }
-            castleRenderCache[castleReplication.castleID] = newCastleRender:: CastleRender
-
-            castleRender = castleRenderCache[castleReplication.castleID]
-        end
+        end 
     end
 
     -- render structures
     do
         for unlockedStructureID, isUnlocked in castleReplication.unlockedStructures do
-            local unlockedStructureData = castleRender.unlockedRenderStructures[unlockedStructureID] 
-
-            local previousState = unlockedStructureData.state
+            local unlockedStructureData = castleRender.unlockedRenderStructures[unlockedStructureID]
             local currentState = isUnlocked
                 and CastleSharedService.STRUCTURE_STATES.AlreadyPurchased
                 or CastleSharedService.STRUCTURE_STATES.ToPurchase
-            
-            if not unlockedStructureData.asset then
+
+            -- change existing structure state
+            if unlockedStructureData then
+                local previousState = unlockedStructureData.state
+                local structureBin = unlockedStructureData.bin
+
+                if unlockedStructureData.state ~= currentState then
+                    unlockedStructureData.state = currentState
+                    CastleSharedService.StructureStateChanged:Fire(
+                        unlockedStructureData.asset,
+                        currentState,
+                        previousState
+                    )
+
+                    CleanupUtil.Clean(structureBin, BIN_TAGS.PURCHASE_PAD_TOUCHED)
+                    purchaseDebounces[unlockedStructureID] = nil
+                end
+
+            -- create new structure + state
+            else
                 local STRUCTURE_ASSET = CastleSharedService.STRUCTURE_NAME_TO_ASSET[unlockedStructureID]
-                
+
                 local structureModel = STRUCTURE_ASSET:Clone(); do
                     structureModel:PivotTo(castleRender.castleIslandModel:GetPivot())
                     structureModel.Parent = castleRender.castleIslandModel.Progression.ClientRender
-    
-                    unlockedStructureData.asset = structureModel
                 end
+                local structureBin = {}
 
                 -- purchase pad touched
                 do
                     local purchasePad = structureModel.PurchasePad
                     local hitboxPart = purchasePad.Hitbox:: BasePart
 
-                    CleanupUtil.InsertBin(unlockedStructureData.bin, 
+                    purchaseDebounces[unlockedStructureID] = false
+
+                    CleanupUtil.InsertBin(structureBin, 
                         hitboxPart.Touched:Connect(function(part)
+                            if purchaseDebounces[unlockedStructureID] then
+                                return
+                            end
+
                             local character = part:FindFirstAncestorWhichIsA("Model")
                             local player = character and Players:GetPlayerFromCharacter(character)
                             if not player then
                                 return
                             end
 
+                            purchaseDebounces[unlockedStructureID] = true
+                            task.delay(PURCHASE_TOUCHED_DEBOUNCE, function()
+                                purchaseDebounces[unlockedStructureID] = false
+                            end)
+
                             CastleSharedService.StructurePurchaseTouched:Fire(unlockedStructureID, player)
+
                         end), BIN_TAGS.PURCHASE_PAD_TOUCHED
                     )
                 end
 
+                unlockedStructureData = {
+                    asset = structureModel;
+                    state = currentState;
+                    bin = structureBin;
+                }
+
                 -- update state
                 do
-                    unlockedStructureData.state = currentState
+                    castleRender.unlockedRenderStructures[unlockedStructureID] = unlockedStructureData:: any
+
                     CastleSharedService.StructureRendered:Fire(
-                        unlockedStructureData,
+                        unlockedStructureData.asset:: any,
                         currentState
                     )
-                end
-            else
-                -- update state
-                do
-                    if unlockedStructureData.state ~= currentState then
-                        unlockedStructureData.state = currentState
-                        CastleSharedService.StructureStateChanged:Fire(
-                            unlockedStructureData,
-                            currentState,
-                            previousState
-                        )
-                    end
                 end
             end
         end

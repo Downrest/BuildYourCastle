@@ -15,7 +15,7 @@ local characterAddedCallbacks = {}:: CharacterAddedCallbacks
 local function updateCharacterData(character: Model)
 	PlayerUtil.character = character
 	PlayerUtil.humanoid = character:WaitForChild("Humanoid"):: Humanoid
-	PlayerUtil.animator = character:WaitForChild("Animator"):: Animator
+	PlayerUtil.animator = PlayerUtil.humanoid:WaitForChild("Animator"):: Animator
 end
 
 local function reflectCharacterData(): CharacterData

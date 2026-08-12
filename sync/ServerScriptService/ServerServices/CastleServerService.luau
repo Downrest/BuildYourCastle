@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 
 local CastleServerService = {}
@@ -11,9 +13,22 @@ export type CastleCache = {
     castleID: number;
 }
 
+export type StructureData = {
+    cost: {
+        gold: number;   
+    };
+}
+
 CastleServerService.CastleCache = {}:: {CastleCache}
 
 local MAX_CASTLES = 4
+local STRUCTURE_ID_DATA = {
+    [CastleSharedService.STRUCTURE_NAMES.Pathway1] = {
+        cost = {
+            gold = 30;   
+        };
+    }
+}
 
 local function getPlayerCastleCache(player: Player): CastleCache?
     local currentIndex = 1
@@ -52,6 +67,15 @@ local function getPlayerCastleData(player: Player): CastleData
     return castleData:: DataServerService.CastleData
 end
 
+local function setPlayerCastleData(player: Player, castleData: CastleData)
+    local playerCastleCache = getPlayerCastleCache(player)
+    if not playerCastleCache then
+        return
+    end
+
+    playerCastleCache.castleData = castleData
+end
+
 function CastleServerService.Init()
     -- initializing castle cache
     do
@@ -66,6 +90,51 @@ function CastleServerService.Init()
             )
         end
     end
+end
+
+function CastleServerService.GetStructureData(structureID: string): StructureData
+    return STRUCTURE_ID_DATA[structureID]
+end
+
+function CastleServerService.IsPlayerStructurePurchased(player: Player, structureID: string): boolean
+    local playerCastleData = CastleServerService.GetPlayerCastleCache(player)
+    assert(playerCastleData and playerCastleData.castleData, "Attempted to check structure purchased status with nil player castle data!")
+
+    local structureData = playerCastleData.castleData.structureData[structureID]
+    local isUnlocked = structureData[2]
+
+    return isUnlocked
+end
+
+function CastleServerService.PurchasePlayerStructure(player: Player, structureID: string): boolean
+    return DataServerService.SetPlayerDataAsync(player, function(data)
+        local structureData = data.castle.structureData[structureID]
+        local isPurchaseable = structureData[1]
+        local isUnlocked = structureData[2]
+
+        if not isPurchaseable then
+            return false
+        end
+        assert(not isUnlocked, "Attempted to purchase a structure that's already unlocked? Must be a bug.")
+
+        -- update structure data
+        do
+            local newIsUnlocked = true
+
+            data.castle.structureData[structureID] = {
+                isPurchaseable, newIsUnlocked
+            }
+        end
+
+        -- update internal castle cache
+        do
+            setPlayerCastleData(player, data.castle)
+        end
+
+        warn(`PURCHASED! NEW DATA IS... `, data)
+
+        return true
+    end)
 end
 
 function CastleServerService.GetPlayerCastleCache(player: Player): CastleCache?

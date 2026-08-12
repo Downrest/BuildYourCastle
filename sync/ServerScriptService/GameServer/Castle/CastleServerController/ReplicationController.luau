@@ -38,7 +38,6 @@ function ReplicationController.Init()
             table.remove(clientReplicationQueue, index)
         end
 
-        warn("REPLICATINGGG..... ", batchedReplicationData)
         CastleSharedService.ReplicationPacket.server:FireAllClients(
             CastleSharedService.SerializeReplicationPacket(batchedReplicationData)
         )
@@ -46,9 +45,8 @@ function ReplicationController.Init()
 end
 
 function ReplicationController.RenderAndReplicateCastle(castleReplication: CastleSharedService.CastleReplication)
-    CastleSharedService.RenderCastleReplication(castleReplication)
-
     table.insert(clientReplicationQueue, castleReplication)
+    CastleSharedService.RenderCastleReplication(castleReplication)
 end
 
 return ReplicationController
