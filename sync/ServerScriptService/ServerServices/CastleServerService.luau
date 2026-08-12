@@ -55,13 +55,13 @@ end
 function CastleServerService.Init()
     -- initializing castle cache
     do
-        for i = 1, MAX_CASTLES do
+        for castleID = 1, MAX_CASTLES do
             table.insert(
                 CastleServerService.CastleCache,
                 {
                     owner = nil;
                     castleData = nil;
-                    castleID = i;
+                    castleID = castleID;
                 }
             )
         end
@@ -72,18 +72,16 @@ function CastleServerService.GetPlayerCastleCache(player: Player): CastleCache?
     return getPlayerCastleCache(player)
 end
 
-function CastleServerService.GetCastleCaches(): {CastleCache}
+function CastleServerService.GetPlayerCastleCacheList(): {CastleCache}
     return CastleServerService.CastleCache
 end
 
-function CastleServerService.AddPlayerCastle(player: Player): CastleCache
+function CastleServerService.AddPlayerCastleCache(player: Player): CastleCache
     local vacantCastle = getVacantCastleCache()
     assert(vacantCastle, "Attempted to add player castle when all castles are already occupied?")
 
-    do
-        vacantCastle.owner = player
-        vacantCastle.castleData = getPlayerCastleData(player)
-    end
+    vacantCastle.owner = player
+    vacantCastle.castleData = getPlayerCastleData(player)
 
     return vacantCastle
 end

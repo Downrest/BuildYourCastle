@@ -36,25 +36,26 @@ end
 
 local function replicateCastlesToNewPlayer(player: Player)
     DataServerService.OnPlayerDataInitialized(player, function()
-        for _, castleCache in CastleServerService.GetCastleCaches() do
+        warn(`OH NEW PLAYER.. TRY TO RENDER..`, CastleServerService.GetPlayerCastleCacheList())
+        for _, castleCache in CastleServerService.GetPlayerCastleCacheList() do
             local castleReplication = castleCacheToReplication(castleCache)
 
-            ReplicationController.PushReplicationToQueue(castleReplication)
+            ReplicationController.RenderAndReplicateCastle(castleReplication)
         end
     end)
 end
 
 local function addPlayerCastle(player: Player)
     DataServerService.OnPlayerDataInitialized(player, function()
-        local castleCache = CastleServerService.AddPlayerCastle(player)
+        local castleCache = CastleServerService.AddPlayerCastleCache(player)
         local castleReplication = castleCacheToReplication(castleCache)
 
-        ReplicationController.PushReplicationToQueue(castleReplication)
+        ReplicationController.RenderAndReplicateCastle(castleReplication)
     end)
 end
 
 function CastleServerController.Init()
-    ReplicationController.InitStep()
+    ReplicationController.Init()
     CastleServerService.Init()
 
     do
@@ -66,7 +67,9 @@ function CastleServerController.Init()
         end)
     end
 
+    warn("????")
     CastleSharedService.ClientReplicationReady.server.OnServerEvent:Connect(function(player)
+        warn(`CLIENT IS READY....`)
         replicateCastlesToNewPlayer(player)
     end)
 end
