@@ -4,30 +4,24 @@ local DataServerService = require(ServerScriptService.ServerServices.DataServerS
 
 local CurrencyServerService = {}
 
-function CurrencyServerService.SetGoldAsync(player: Player, goldAmount: number, atomicCallback: () -> boolean): boolean
-    return DataServerService.SetPlayerDataAsync(player, function(data)
-        local successBoolean = atomicCallback()
+CurrencyServerService.CURRENCY_TYPES = {
+    Gold = "Gold";
+}
 
-        data.currency.gold = goldAmount
-
-        return successBoolean
-    end)
+function CurrencyServerService.CanAffordGold(
+    data: DataServerService.PlayerData, 
+    cost: number
+): boolean
+    return data.currency.gold >= cost
 end
 
-function CurrencyServerService.IncrementGoldAsync(player: Player, goldIncrement: number, atomicCallback: () -> boolean): boolean
-    return DataServerService.SetPlayerDataAsync(player, function(data)
-        local successBoolean = atomicCallback()
+function CurrencyServerService.IncrementGold(
+    data: DataServerService.PlayerData, 
+    increment: number
+): boolean
+    data.currency.gold += increment
 
-        data.currency.gold += goldIncrement
-
-        return successBoolean
-    end)
-end
-
-function CurrencyServerService.GetGoldAsync(player: Player): number
-    local playerData = DataServerService.GetPlayerDataAsync(player)
-
-    return playerData.currency.gold
+    return true
 end
 
 return CurrencyServerService

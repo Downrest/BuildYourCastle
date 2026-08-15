@@ -1,4 +1,3 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
@@ -6,125 +5,113 @@ local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleShare
 local TableUtil = require(ReplicatedStorage.SharedUtils.TableUtil)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
+local PurchaseServerService = require(ServerScriptService.ServerServices.PurchaseServerService)
 local ReplicationController = require(script.ReplicationController)
-local ClientPurchaseController = require(script.ClientPurchaseController)
 
 local CastleServerController = {}
 
-local function castleCacheToReplication(castleCache: CastleServerService.CastleCache): CastleSharedService.CastleReplication
-    assert(
-        castleCache,
-        "Attempted to convert nil castle cache into castle replication."
-    )
-
-    local castleReplication = {
-        castleID = castleCache.castleID;
-        unlockedStructures = {};
-    }; do
-        if castleCache["castleData"] then
-            for structureName, booleanData in castleCache.castleData.structureData do
-                local isPurchaseable, isUnlocked = booleanData[1], booleanData[2]
-                if not isPurchaseable then
-                    continue
-                end
-
-                castleReplication.unlockedStructures[structureName] = isUnlocked
-            end
-        end
-    end
-
-    return castleReplication
-end
-
-local function replicateCastlesToNewPlayer(player: Player)
-    DataServerService.OnPlayerDataInitialized(player, function()
-        warn(`OH NEW PLAYER.. TRY TO RENDER..`, CastleServerService.GetPlayerCastleCacheList())
-        for _, castleCache in CastleServerService.GetPlayerCastleCacheList() do
-            local castleReplication = castleCacheToReplication(castleCache)
-
-            ReplicationController.RenderAndReplicateCastle(castleReplication)
-        end
-    end)
-end
-
-local function addPlayerCastle(player: Player)
-    DataServerService.OnPlayerDataInitialized(player, function()
-        local castleCache = CastleServerService.AddPlayerCastleCache(player)
-        local castleReplication = castleCacheToReplication(castleCache)
-
-        ReplicationController.RenderAndReplicateCastle(castleReplication)
-    end)
-end
-
-local function trackCastleCacheDelta(player: Player)
-    local previousCastleCache = TableUtil.DeepCopy(
-        CastleServerService.GetPlayerCastleCache(player)
-    )
-    assert(previousCastleCache and previousCastleCache.castleData, "Attempted to track structure purchase with nil castle cache!")
-
-    return {
-        ReplicateCastleCacheDelta = function()
-            local deltaCastleCache = TableUtil.DeepCopy(
-                CastleServerService.GetPlayerCastleCache(player)
-            ); do
-                assert(deltaCastleCache and deltaCastleCache.castleData, "Attempted to replicate castle cache delta with nil castle cache!")
-
-                -- remove the previous structures, leaving the new purchased structures
-                for previousStructureID, previousBooleanData in previousCastleCache.castleData.structureData do
-                    local deltaStructureBooleanData = deltaCastleCache.castleData.structureData[previousStructureID]
-
-                    -- include it in delta cache because of state change
-                    if 
-                        previousBooleanData[1] ~= deltaStructureBooleanData[1] -- isPurchaseaable
-                        or previousBooleanData[2] ~= deltaStructureBooleanData[2] -- isUnlocked
-                    then
-                        continue
-                    end
-
-                    deltaCastleCache.castleData.structureData[previousStructureID] = nil
-                end
-            end
-            
-            local deltaCastleReplication = castleCacheToReplication(deltaCastleCache)
-            
-            ReplicationController.RenderAndReplicateCastle(deltaCastleReplication)
-        end
-    }
-end
-
 function CastleServerController.Init()
-    ReplicationController.Init()
-    CastleServerService.Init()
-
     do
-        for _, player in Players:GetPlayers() do
-            addPlayerCastle(player)
-        end
-        Players.PlayerAdded:Connect(function(player)
-            addPlayerCastle(player)
-        end)
+        ReplicationController.Init()
+        CastleServerService.Init()
     end
 
+    -- replicate all existing cache to initialized player
     CastleSharedService.ClientReplicationReady.server.OnServerEvent:Connect(function(
         player
     )
-        replicateCastlesToNewPlayer(player)
+        for _, castleCache in CastleServerService.GetCastleCacheList() do
+            local castleID = castleCache.castleID
+            local castleStructureData = castleCache.castleData 
+                and castleCache.castleData.structureData
+                or {}
+
+            ReplicationController.ReplicatePlayer(
+                player, 
+                ReplicationController.CastleCacheToReplication(
+                    castleID,
+                    castleStructureData
+                )
+            )
+        end
     end)
 
+    -- replicate initialized player cache to rest of players
+    CastleServerService.PlayerCastleInitialized:Connect(function(
+        player,
+        initCastleID,
+        initStructureData
+    )
+        ReplicationController.RegisterPlayer(player)
+
+        ReplicationController.ReplicateToAll(
+            ReplicationController.CastleCacheToReplication(
+                initCastleID,
+                initStructureData
+            )
+        )
+    end)
+
+    -- replicates delta structure data
+    CastleServerService.PlayerCastleChanged:Connect(function(
+        player,
+        castleID,
+        newStructureData,
+        previousStructureData
+    )
+        local deltaStructureData = {}; do
+            for structureID, booleanData in newStructureData do
+                local previousBooleanData = previousStructureData[structureID]
+                if 
+                    previousBooleanData[1] == booleanData[1]
+                    and previousBooleanData[2] == booleanData[2]
+                then
+                    continue
+                end
+    
+                deltaStructureData[structureID] = booleanData
+            end
+        end
+
+        ReplicationController.ReplicateToAll(
+            ReplicationController.CastleCacheToReplication(
+                castleID,
+                deltaStructureData
+            )
+        )
+    end)
+
+    -- rerenders released player castle into a blank
+    CastleServerService.PlayerCastleReleased:Connect(function(
+        player
+    )
+        for _, castleCache in CastleServerService.GetCastleCacheList() do
+            local castleID = castleCache.castleID
+            local castleStructureData = castleCache.castleData 
+                and castleCache.castleData.structureData
+                or {}
+
+            ReplicationController.ReplicatePlayer(
+                player, 
+                ReplicationController.CastleCacheToReplication(
+                    castleID,
+                    castleStructureData
+                )
+            )
+        end
+    end)
+
+    -- handle structure purchases
     CastleSharedService.ClientTouchedStructurePurchase.server.OnServerEvent:Connect(function(
         player,
         structureID
     )
-        if CastleServerService.IsPlayerStructurePurchased(player, structureID) then
-            return
-        end
+        local purchaseSuccess = PurchaseServerService.PurchaseCastleStructure(
+            player,
+            structureID
+        )
 
-		local structureDelta = trackCastleCacheDelta(player)
-        local purchaseSuccess = ClientPurchaseController.AttemptPurchase(player, structureID)
-
-        if purchaseSuccess then
-            structureDelta.ReplicateCastleCacheDelta()
-        end
+        -- return purchase status
         CastleSharedService.ServerPurchaseStatus.server:FireClient(player, purchaseSuccess)
     end)
 end

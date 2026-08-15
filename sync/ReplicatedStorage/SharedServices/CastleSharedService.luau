@@ -17,6 +17,7 @@ local castleProgressions = castleAssets.Progression
 export type BatchedCastleReplication = {CastleReplication}
 export type CastleReplication = {
     castleID: number;
+    isDestructive: boolean;
     --[[
         {[structureName -> string]: isUnlocked -> boolean}
     ]]
@@ -25,8 +26,11 @@ export type CastleReplication = {
 
 export type StructureAsset = Model & {
     Assets: Instance;
+    PurchaseAttachment: {
+        PurchaseParticle: ParticleEmitter;
+    };
     PurchasePad: {
-        Button: Instance;
+        Button: Model;
         Hitbox: Instance;
     };
 }
@@ -42,6 +46,7 @@ export type CastleRender = {
     };
 }
 
+CastleSharedService.UNRENDER_CONTAINER = script.Unrendered
 CastleSharedService.STRUCTURE_NAMES = {
 	Pathway1 = "Pathway1";
 }
@@ -109,6 +114,7 @@ local purchaseDebounces = {}:: {[string]: boolean}
 ]]
 local castleReplicationSerde = Squash.record({
     castleID = Squash.T(Squash.i8());
+    isDestructive = Squash.T(Squash.literal(true, false));
     unlockedStructures = Squash.T(
         Squash.map<<string, boolean>>(
             Squash.string(),
@@ -177,6 +183,17 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 
     -- render structures
     do
+        -- if destructive, clear every existing asset, let new data override
+        if castleReplication.isDestructive then
+            for structureID, structureData in castleRender.unlockedRenderStructures do
+                local asset = structureData.asset; do
+                    asset:Destroy()
+                end
+
+                castleRender.unlockedRenderStructures[structureID] = nil
+            end
+        end
+
         for unlockedStructureID, isUnlocked in castleReplication.unlockedStructures do
             local unlockedStructureData = castleRender.unlockedRenderStructures[unlockedStructureID]
             local currentState = isUnlocked
