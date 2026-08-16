@@ -296,9 +296,9 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 							
 							-- sync title + cost billboard values to structure ID config
 							do
-								titleText.Text = structureConfig.title
+								titleText.Text = `{structureConfig.title}`
 								
-								goldCostText.Text = structureConfig.cost.gold
+								goldCostText.Text = `{structureConfig.cost.gold}`
 							end
 
 							-- purchase pad touched
