@@ -48,14 +48,6 @@ CastleServerService.CastleCacheList = {}:: {CastleCache}
 local playerToCastleCache = {}:: {[Player]: CastleCache}
 
 local MAX_CASTLES = 4
--- MOVE THIS TO SHARED
-local STRUCTURE_CONFIG_DATA = {
-    [CastleSharedService.STRUCTURE_NAMES.Pathway1] = {
-        cost = {
-            gold = 30;   
-        };
-    }
-}
 
 local function getVacantCastleCache(): CastleCache?
     local currentIndex = 1
@@ -179,7 +171,7 @@ function CastleServerService.GetCastleCacheList(): {CastleCache}
 end
 
 function CastleServerService.GetStructureConfig(structureID: string): StructureConfig?
-    return STRUCTURE_CONFIG_DATA[structureID]
+    return CastleSharedService.STRUCTURE_CONFIG_DATA[structureID]
 end
 
 function CastleServerService.IsStructureUnlockable(data: DataServerService.PlayerData, structureID: string): boolean

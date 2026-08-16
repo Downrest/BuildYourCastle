@@ -7,7 +7,7 @@ local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleShare
 local ReplicationController = {}
 
 local random = Random.new()
-local renderCache = {}:: {[CastleSharedService.StructureAsset]: {
+local renderCache = {}:: {[CastleSharedService.DefaultStructure]: {
     buttonInstance: Model;
     structureInstances: {Instance};
 
@@ -24,11 +24,13 @@ local renderCache = {}:: {[CastleSharedService.StructureAsset]: {
 local castleSoundGroup = SoundService.SFX.Castle
 local structurePurchaseSound = castleSoundGroup.StructurePurchase
 
-local function cacheRenderAssets(structureAsset: CastleSharedService.StructureAsset)
-    local buttonInstance = structureAsset.PurchasePad.Button
+local function cacheRenderAssets(structureAsset: CastleSharedService.DefaultStructure)
+	local purchasePad = structureAsset.Constants.PurchasePad
+	
+	local buttonInstance = purchasePad.Button
     local structureInstances = structureAsset.Assets:QueryDescendants("BasePart")
 
-    local purchaseParticle = structureAsset.PurchaseAttachment.PurchaseParticle
+	local purchaseParticle = purchasePad.Hitbox.PurchaseParticle
 
     local partParentCache = {}; do
         partParentCache[buttonInstance:: Instance] = {
@@ -36,8 +38,8 @@ local function cacheRenderAssets(structureAsset: CastleSharedService.StructureAs
             cframe = buttonInstance:GetPivot();
         }
 
-        for _, instance in structureInstances do
-            partParentCache[instance:: Instance] = {
+		for _, instance: BasePart in structureInstances do
+            partParentCache[instance] = {
                 parent = instance.Parent:: Instance;
                 cframe = instance.CFrame;
             }
@@ -56,7 +58,7 @@ local function cacheRenderAssets(structureAsset: CastleSharedService.StructureAs
     }
 end
 
-local function togglePurchasePad(structureAsset: CastleSharedService.StructureAsset, isStructureUnlocked: boolean)
+local function togglePurchasePad(structureAsset: CastleSharedService.DefaultStructure, isStructureUnlocked: boolean)
     local renderCache = renderCache[structureAsset]
     local buttonInstance = renderCache.buttonInstance
 
@@ -65,7 +67,7 @@ local function togglePurchasePad(structureAsset: CastleSharedService.StructureAs
         or renderCache.partParentCache[buttonInstance].parent
 end
 
-local function toggleStructureAssets(structureAsset: CastleSharedService.StructureAsset, isStructureUnlocked: boolean, isAnimated: boolean?)
+local function toggleStructureAssets(structureAsset: CastleSharedService.DefaultStructure, isStructureUnlocked: boolean, isAnimated: boolean?)
     local renderCache = renderCache[structureAsset]
     local structureInstances = renderCache.structureInstances
 
@@ -103,7 +105,7 @@ local function toggleStructureAssets(structureAsset: CastleSharedService.Structu
     end
 end
 
-local function triggerPurchaseEffects(structureAsset: CastleSharedService.StructureAsset)
+local function triggerPurchaseEffects(structureAsset: CastleSharedService.DefaultStructure)
     local renderCache = renderCache[structureAsset]
 
     structurePurchaseSound:Play()

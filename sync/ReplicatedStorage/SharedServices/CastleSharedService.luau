@@ -9,10 +9,32 @@ local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
 
 local CastleSharedService = {}
 
+local castleReplicationSerde = Squash.record({
+    castleID = Squash.T(Squash.i8());
+    isDestructive = Squash.T(Squash.literal(true, false));
+    unlockedStructures = Squash.T(
+        -- [structureName -> string]: isUnlocked -> boolean
+        Squash.map<<string, boolean>>(
+            Squash.string(),
+            Squash.literal(true, false)
+        )
+    );
+})
+local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
+
+local lobbyIsland = MapSharedService.LOBBY_ISLAND
 local sharedAssets = ReplicatedStorage.SharedAssets
 local castleAssets = sharedAssets.Castle
 local castleIslandModel = castleAssets.CastleIsland
+
+local castleConstants = castleAssets.Constants
+local purchasePadConstant = castleConstants.PurchasePad
+
 local castleProgressions = castleAssets.Progression
+
+local renderContainer
+local castleRenderCache = {}:: {[number]: CastleRender}
+local purchaseDebounces = {}:: {[string]: boolean}
 
 export type BatchedCastleReplication = {CastleReplication}
 export type CastleReplication = {
@@ -24,23 +46,54 @@ export type CastleReplication = {
     unlockedStructures: {[string]: boolean};
 }
 
-export type StructureAsset = Model & {
-    Assets: Instance;
-    PurchaseAttachment: {
-        PurchaseParticle: ParticleEmitter;
+export type PurchaseConstant = {
+	Constants:  {
+		PurchasePad: {
+			Button: Model & {
+				Base: BasePart;
+				Button: BasePart & {
+					PriceAttachment: Attachment & {
+						BillboardGui: BillboardGui & {
+							Frame: Frame & {
+								GoldCost: TextLabel;
+								GoldIcon: ImageLabel;
+							}
+						}
+					};
+					TitleAttachment: Attachment & {
+						BillboardGui: BillboardGui & {
+							Frame: Frame & {
+								Title: TextLabel;
+							}
+						}
+					}
+				};
+			};
+			Hitbox: BasePart & {
+				PurchaseParticle: ParticleEmitter;
+			};
+		};
     };
-    PurchasePad: {
-        Button: Model;
-        Hitbox: Instance;
+	Origins: {
+        PurchaseOrigin: BasePart;
     };
 }
+export type GenericStructure = Model & {
+    Assets: Instance;
+
+    Constants: {};
+	Origins: {};
+}
+export type DefaultStructure = GenericStructure
+    & PurchaseConstant
+
 export type StructureRenderData = {
-    asset: StructureAsset;
+    asset: DefaultStructure;
     state: string;
     bin: {CleanupUtil.Trash?};
 }
 export type CastleRender = {
-    castleIslandModel: typeof(castleIslandModel);
+	castleIslandModel: typeof(castleIslandModel);
     unlockedRenderStructures: {
         [string]: StructureRenderData
     };
@@ -57,6 +110,14 @@ CastleSharedService.STRUCTURE_STATES = {
     ToPurchase = "ToPurchase";
     AlreadyPurchased = "AlreadyPurchased";
 }
+CastleSharedService.STRUCTURE_CONFIG_DATA = {
+	[CastleSharedService.STRUCTURE_NAMES.Pathway1] = {
+		title = "Pathway";
+		cost = {
+			gold = 30;   
+		};
+	}
+}
 
 CastleSharedService.ClientReplicationReady =
     TypedEvent.newReliable("ClientReplicationReady"):: TypedEvent.ClientToServer<any>
@@ -71,58 +132,38 @@ CastleSharedService.ServerPurchaseStatus =
 CastleSharedService.StructurePurchaseTouched = 
     Signal.new<<(structureID: string, touchingPlayer: Player) -> ()>>()
 CastleSharedService.StructureRendered = 
-    Signal.new<<(structureAsset: StructureAsset, currentState: string) -> ()>>()
+    Signal.new<<(structureAsset: DefaultStructure, currentState: string) -> ()>>()
 CastleSharedService.StructureStateChanged = 
-    Signal.new<<(structureAsset: StructureAsset, newState: string, oldState: string) -> ()>>()
-    
-local ISLAND_ASSET = castleIslandModel
+    Signal.new<<(structureAsset: DefaultStructure, newState: string, oldState: string) -> ()>>()
+
 local CASTLE_ID_DATA = {
     [1] = {
-        cframe = MapSharedService.LOBBY_ISLAND:GetPivot()
+        cframe = lobbyIsland:GetPivot()
             * CFrame.Angles(0, math.rad(-90), 0)
     };
     [2] = {
-        cframe = MapSharedService.LOBBY_ISLAND:GetPivot()
+        cframe = lobbyIsland:GetPivot()
             * CFrame.Angles(0, math.rad(0), 0)
     };
     [3] = {
-        cframe = MapSharedService.LOBBY_ISLAND:GetPivot()
+        cframe = lobbyIsland:GetPivot()
             * CFrame.Angles(0, math.rad(90), 0)
     };
     [4] = {
-        cframe = MapSharedService.LOBBY_ISLAND:GetPivot()
+        cframe = lobbyIsland:GetPivot()
             * CFrame.Angles(0, math.rad(180), 0)
     };
+}
+local ORIGIN_NAMES = {
+    PurchaseOrigin = "PurchaseOrigin";
+}
+local ORIGIN_NAMES_TO_CONSTANT_MODELS = {
+    [ORIGIN_NAMES.PurchaseOrigin] = castleConstants.PurchasePad;
 }
 local BIN_TAGS = {
     PURCHASE_PAD_TOUCHED = "PurchasePadTouched"
 }
 local PURCHASE_TOUCHED_DEBOUNCE = .5
-
-local renderContainer
-local castleRenderCache = {}:: {[number]: CastleRender}
-local purchaseDebounces = {}:: {[string]: boolean}
-
---[[
-    THE REPLICATION FORMAT IS AS FOLLOWS:
-
-    `castleID` denotes the castle type to place structures in (client renders castle type if not existing yet)
-    `unlockedStructures` denotes the structures in that castle type to be rendered, 
-        L>  {
-                [structureName -> string]: isUnlocked -> boolean
-            }
-]]
-local castleReplicationSerde = Squash.record({
-    castleID = Squash.T(Squash.i8());
-    isDestructive = Squash.T(Squash.literal(true, false));
-    unlockedStructures = Squash.T(
-        Squash.map<<string, boolean>>(
-            Squash.string(),
-            Squash.literal(true, false)
-        )
-    );
-})
-local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
 
 function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: BatchedCastleReplication): buffer
     warn("ATTEMPT TO SERIALIZE!!!! ", batchCastleReplication)
@@ -165,7 +206,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
             -- cache castle render data + render island if necessary
             do
                 local castleCFrame = CASTLE_ID_DATA[castleReplication.castleID].cframe
-                local castleIslandModel = ISLAND_ASSET:Clone(); do
+                local castleIslandModel = castleIslandModel:Clone(); do
                     castleIslandModel:PivotTo(castleCFrame)
                     castleIslandModel.Parent = renderContainer
                 end
@@ -221,50 +262,78 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
             else
                 local STRUCTURE_ASSET = CastleSharedService.STRUCTURE_NAME_TO_ASSET[unlockedStructureID]
 
-                local structureModel = STRUCTURE_ASSET:Clone(); do
+				local structureModel: DefaultStructure = (STRUCTURE_ASSET:Clone():: any); do
                     structureModel:PivotTo(castleRender.castleIslandModel:GetPivot())
-                    structureModel.Parent = castleRender.castleIslandModel.Progression.ClientRender
-                end
+                    structureModel.Parent = castleRender.castleIslandModel.Progression
+				end
+				local structureConfig = CastleSharedService.STRUCTURE_CONFIG_DATA[unlockedStructureID]
                 local structureBin = {}
 
-                -- purchase pad touched
-                do
-                    local purchasePad = structureModel.PurchasePad
-                    local hitboxPart = purchasePad.Hitbox:: BasePart
+				-- create constants available to structure
+				do
+					for _, originInstance in (structureModel.Origins:: Instance):GetChildren() do
+                        local originName = originInstance.Name
 
-                    purchaseDebounces[unlockedStructureID] = false
+						-- purchase pad
+						if originName == ORIGIN_NAMES.PurchaseOrigin then
+							purchaseDebounces[unlockedStructureID] = false
+							
+							local purchasePad = ORIGIN_NAMES_TO_CONSTANT_MODELS[originName]; do
+								local purchaseOrigin = structureModel.Origins.PurchaseOrigin
+								
+								purchasePad:PivotTo(purchaseOrigin.CFrame)
+								purchasePad.Parent = (structureModel.Constants:: Instance)
+							end
+							
+							local hitboxPart = purchasePad.Hitbox
+							local buttonPart = purchasePad.Button.Button
+							local priceGui = buttonPart.PriceAttachment.BillboardGui
+							local priceFrame = priceGui.Frame
+							local goldCostText = priceFrame.GoldCost
+							local titleGui = buttonPart.TitleAttachment.BillboardGui
+							local titleFrame = titleGui.Frame
+							local titleText = titleGui.Frame.Title
+							
+							-- sync title + cost billboard values to structure ID config
+							do
+								titleText.Text = structureConfig.title
+								
+								goldCostText.Text = structureConfig.cost.gold
+							end
 
-                    CleanupUtil.InsertBin(structureBin, 
-                        hitboxPart.Touched:Connect(function(part)
-                            if purchaseDebounces[unlockedStructureID] then
-                                return
-                            end
+							-- purchase pad touched
+							CleanupUtil.InsertBin(structureBin, 
+								hitboxPart.Touched:Connect(function(part)
+									if purchaseDebounces[unlockedStructureID] then
+										return
+									end
 
-                            local character = part:FindFirstAncestorWhichIsA("Model")
-                            local player = character and Players:GetPlayerFromCharacter(character)
-                            if not player then
-                                return
-                            end
+									local character = part:FindFirstAncestorWhichIsA("Model")
+									local player = character and Players:GetPlayerFromCharacter(character)
+									if not player then
+										return
+									end
 
-                            purchaseDebounces[unlockedStructureID] = true
-                            task.delay(PURCHASE_TOUCHED_DEBOUNCE, function()
-                                purchaseDebounces[unlockedStructureID] = false
-                            end)
+									purchaseDebounces[unlockedStructureID] = true
+									task.delay(PURCHASE_TOUCHED_DEBOUNCE, function()
+										purchaseDebounces[unlockedStructureID] = false
+									end)
 
-                            CastleSharedService.StructurePurchaseTouched:Fire(unlockedStructureID, player)
+									CastleSharedService.StructurePurchaseTouched:Fire(unlockedStructureID, player)
 
-                        end), BIN_TAGS.PURCHASE_PAD_TOUCHED
-                    )
-                end
-
-                unlockedStructureData = {
-                    asset = structureModel;
-                    state = currentState;
-                    bin = structureBin;
-                }
+								end), BIN_TAGS.PURCHASE_PAD_TOUCHED
+							)
+						end
+					end
+				end
 
                 -- update state
-                do
+				do
+					unlockedStructureData = {
+						asset = structureModel;
+						state = currentState;
+						bin = structureBin;
+					}
                     castleRender.unlockedRenderStructures[unlockedStructureID] = unlockedStructureData:: any
 
                     CastleSharedService.StructureRendered:Fire(
