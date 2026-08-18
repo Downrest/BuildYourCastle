@@ -6,6 +6,7 @@ local Squash = require(ReplicatedStorage.SharedPackages.Squash)
 local TypedEvent = require(ReplicatedStorage.SharedPackages.TypedEvent)
 local MapSharedService = require(ReplicatedStorage.SharedServices.MapSharedService)
 local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local StructureConfig = require(script.StructureConfig)
 
 local CastleSharedService = {}
 
@@ -28,9 +29,6 @@ local castleAssets = sharedAssets.Castle
 local castleIslandModel = castleAssets.CastleIsland
 
 local castleConstants = castleAssets.Constants
-local purchasePadConstant = castleConstants.PurchasePad
-
-local castleProgressions = castleAssets.Progression
 
 local renderContainer
 local castleRenderCache = {}:: {[number]: CastleRender}
@@ -99,24 +97,15 @@ export type CastleRender = {
     };
 }
 
+export type StructureConfig = StructureConfig.StructureConfig
+
+CastleSharedService.STRUCTURE_NAMES = StructureConfig.STRUCTURE_NAMES
+CastleSharedService.STRUCTURE_NAME_TO_ASSET = StructureConfig.STRUCTURE_NAME_TO_ASSET
+CastleSharedService.STRUCTURE_CONFIG_DATA = StructureConfig.STRUCTURE_CONFIG_DATA
 CastleSharedService.UNRENDER_CONTAINER = script.Unrendered
-CastleSharedService.STRUCTURE_NAMES = {
-	Pathway1 = "Pathway1";
-}
-CastleSharedService.STRUCTURE_NAME_TO_ASSET = {
-    [CastleSharedService.STRUCTURE_NAMES.Pathway1] = castleProgressions["1. Pathway (10)"];
-}
 CastleSharedService.STRUCTURE_STATES = {
     ToPurchase = "ToPurchase";
     AlreadyPurchased = "AlreadyPurchased";
-}
-CastleSharedService.STRUCTURE_CONFIG_DATA = {
-	[CastleSharedService.STRUCTURE_NAMES.Pathway1] = {
-		title = "Pathway";
-		cost = {
-			gold = 30;   
-		};
-	}
 }
 
 CastleSharedService.ClientReplicationReady =
@@ -271,18 +260,18 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 
 				-- create constants available to structure
 				do
-					for _, originInstance in (structureModel.Origins:: Instance):GetChildren() do
+					for _, originInstance in (structureModel.Origins:: any):GetChildren() do
                         local originName = originInstance.Name
 
 						-- purchase pad
 						if originName == ORIGIN_NAMES.PurchaseOrigin then
 							purchaseDebounces[unlockedStructureID] = false
 							
-							local purchasePad = ORIGIN_NAMES_TO_CONSTANT_MODELS[originName]; do
+							local purchasePad = ORIGIN_NAMES_TO_CONSTANT_MODELS[originName]:Clone(); do
 								local purchaseOrigin = structureModel.Origins.PurchaseOrigin
 								
 								purchasePad:PivotTo(purchaseOrigin.CFrame)
-								purchasePad.Parent = (structureModel.Constants:: Instance)
+								purchasePad.Parent = (structureModel.Constants:: any)
 							end
 							
 							local hitboxPart = purchasePad.Hitbox
@@ -292,7 +281,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 							local goldCostText = priceFrame.GoldCost
 							local titleGui = buttonPart.TitleAttachment.BillboardGui
 							local titleFrame = titleGui.Frame
-							local titleText = titleGui.Frame.Title
+							local titleText = titleFrame.Title
 							
 							-- sync title + cost billboard values to structure ID config
 							do

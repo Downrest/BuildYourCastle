@@ -1,1 +1,1 @@
-return require(script.Parent._Index["paradoxum-games_lyra@0.6.0"]["lyra"])
+return require("./.lpm/paradoxum-games_lyra/src")

@@ -1,0 +1,13 @@
+diff --git a/src/init.luau b/src/init.luau
+index 6457d2e..aff6ee2 100644
+--- a/src/init.luau
++++ b/src/init.luau
+@@ -61,7 +61,7 @@ const ERROR_INFO_MODE: "Auto" | "Full" | "Warn" | "None"
+ 	= "Full"
+ 
+ -- Imports --
+-const Types = require("@self/Types")
++const Types = require(script.Types)
+ 
+ -- Deferred Mutation Helpers --
+ 

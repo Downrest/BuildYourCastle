@@ -5,3 +5,5 @@ PLANS
 sync/ServerStorage/
 sync/StarterGui/
 sync/Workspace/
+packages/
+.lpm-patch/

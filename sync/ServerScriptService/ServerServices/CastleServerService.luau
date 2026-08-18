@@ -9,12 +9,6 @@ local TableUtil = require(ReplicatedStorage.SharedUtils.TableUtil)
 
 local CastleServerService = {}
 
-export type StructureConfig = {
-    cost: {
-        gold: number;
-    }
-}
-
 export type StructureData = DataServerService.CastleStructureData
 export type CastleData = DataServerService.CastleData
 
@@ -170,8 +164,8 @@ function CastleServerService.GetCastleCacheList(): {CastleCache}
     return CastleServerService.CastleCacheList
 end
 
-function CastleServerService.GetStructureConfig(structureID: string): StructureConfig?
-    return CastleSharedService.STRUCTURE_CONFIG_DATA[structureID]
+function CastleServerService.GetStructureConfig(structureID: string): CastleSharedService.StructureConfig?
+    return (CastleSharedService.STRUCTURE_CONFIG_DATA:: {[string]: CastleSharedService.StructureConfig})[structureID]
 end
 
 function CastleServerService.IsStructureUnlockable(data: DataServerService.PlayerData, structureID: string): boolean
@@ -193,12 +187,31 @@ function CastleServerService.IsStructureUnlockable(data: DataServerService.Playe
 end
 
 function CastleServerService.UnlockStructure(data: DataServerService.PlayerData, structureID: string): boolean
-    local structureData = data.castle.structureData[structureID]; do
-        assert(structureData, `Structure ID {structureID} not found?`)
+    local unlockedStructureData = data.castle.structureData[structureID]; do
+        assert(unlockedStructureData, `Structure ID {structureID} not found in structure data?`)
     end
 
-    -- isUnlocked = true
-    structureData[2] = true
+    local structureConfig = CastleServerService.GetStructureConfig(structureID); do
+        assert(structureConfig, `Structure ID {structureID} without valid config?`)
+    end
+    local purchaseableStructures = structureConfig.purchaseable
+
+    -- mutate structure data
+    do
+        -- set unlocked to unlocked structure
+        unlockedStructureData[2] = true
+
+        -- set purchaseable to new progression structures
+        for _, structureID in purchaseableStructures do
+            local purchaseableStructureData = data.castle.structureData[structureID]; do
+                if not purchaseableStructures then
+                    continue
+                end
+            end
+
+            purchaseableStructureData[1] = true
+        end
+    end
 
     return true
 end

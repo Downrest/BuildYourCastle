@@ -1,3 +1,3 @@
-local REQUIRED_MODULE = require(script.Parent._Index["notiku_qnum@0.2.1"]["qnum"])
-export type QNumValue = REQUIRED_MODULE.QNumValue 
-return REQUIRED_MODULE
+local module = require("./.lpm/notiku_qnum/src")
+export type QNumValue = module.QNumValue
+return module

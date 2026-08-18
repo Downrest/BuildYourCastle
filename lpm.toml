@@ -1,0 +1,21 @@
+# Manifest for this project. See https://luaupm.com/docs
+# Add dependencies with `lpm add <scope/name>`, then run `lpm install`.
+
+[indices]
+wally = "https://github.com/UpliftGames/wally-index"
+
+[dependencies]
+Lyra = { name = "paradoxum-games/lyra", version = "^", index = "wally" }
+t = { name = "osyrisrblx/t", version = "^", index = "wally" }
+TypedEvent = { name = "downrest/typedevent", version = "^", index = "wally" }
+TypedAttribute = { name = "downrest/typedattribute", version = "^", index = "wally" }
+Signal = { name = "nowoshire/namedsignal", version = "^", index = "wally" }
+QNum = { name = "notiku/qnum", version = "^", index = "wally" }
+Conch = { name = "alicesaidhi/conch", version = "^", index = "wally" }
+ConchUI = { name = "alicesaidhi/conch-ui", version = "^", index = "wally" }
+Squash = { name = "data-oriented-house/squash", version = "^", index = "wally" }
+
+[patches]
+"osyrisrblx/t@3.1.1" = "patches/osyrisrblx_t@3.1.1.patch"
+"paradoxum-games/lyra@0.6.0" = "patches/paradoxum-games_lyra@0.6.0.patch"
+"nowoshire/namedsignal@2.3.2" = "patches/nowoshire_namedsignal@2.3.2.patch"

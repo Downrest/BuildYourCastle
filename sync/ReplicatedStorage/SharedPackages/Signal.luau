@@ -1,8 +1,11 @@
-local REQUIRED_MODULE = require(script.Parent._Index["nowoshire_namedsignal@2.3.2"]["namedsignal"])
-export type Connection<Signature > = REQUIRED_MODULE.Connection<Signature >
-export type GenericConnection<Params...> = REQUIRED_MODULE.GenericConnection<Params...>
-export type WrapConnection<OtherSignal> = REQUIRED_MODULE.WrapConnection<OtherSignal>
-export type Signal<Signature > = REQUIRED_MODULE.Signal<Signature >
-export type GenericSignal<Params...> = REQUIRED_MODULE.GenericSignal<Params...>
-export type WrapSignal<OtherSignal> = REQUIRED_MODULE.WrapSignal<OtherSignal>
-return REQUIRED_MODULE
+local module = require("./.lpm/nowoshire_namedsignal/src")
+local Types = require("./.lpm/nowoshire_namedsignal/src/Types")
+type __lpm_Connection_Signature = Types.DefaultSignature
+type __lpm_Signal_Signature = Types.DefaultSignature
+export type Connection<Signature = __lpm_Connection_Signature> = module.Connection<Signature>
+export type GenericConnection<Params...> = module.GenericConnection<Params...>
+export type WrapConnection<OtherSignal> = module.WrapConnection<OtherSignal>
+export type Signal<Signature = __lpm_Signal_Signature> = module.Signal<Signature>
+export type GenericSignal<Params...> = module.GenericSignal<Params...>
+export type WrapSignal<OtherSignal> = module.WrapSignal<OtherSignal>
+return module

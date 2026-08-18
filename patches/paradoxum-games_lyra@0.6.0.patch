@@ -1,0 +1,14 @@
+diff --git a/src/Store.luau b/src/Store.luau
+index 198484f..8671e03 100644
+--- a/src/Store.luau
++++ b/src/Store.luau
+@@ -223,6 +223,9 @@ local function createStore<T>(config: StoreConfig<T>): Store<T>
+ 	})
+ 
+ 	logger:log("debug", `creating store`)
++	
++	--TODO: TESTING
++	config.useMock = true
+ 
+ 	-- Determine which DataStoreService implementation to use (real, mock, or custom).
+ 	local dataStoreService = config.dataStoreService
