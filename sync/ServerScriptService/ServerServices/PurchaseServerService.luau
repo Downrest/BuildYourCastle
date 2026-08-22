@@ -15,8 +15,10 @@ function PurchaseServerService.PurchaseCastleStructure(player: Player, structure
         
         -- conditional flags
         do
-            assert(CurrencyServerService.CanAffordGold(data, structureCost))
-            assert(CastleServerService.IsStructureUnlockable(data, structureID))
+            if not CurrencyServerService.CanAffordGold(data, structureCost) then
+                return false
+            end
+            assert(CastleServerService.IsStructureUnlockable(data, structureID), `{player} cannot unlock structure ID {structureID}`)
         end
 
         -- process data mutation

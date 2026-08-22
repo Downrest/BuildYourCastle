@@ -46,12 +46,12 @@ url = "https://api.wally.run/v1/package-contents/data-oriented-house/squash/5.0.
 
 [[package]]
 name = "downrest/typedattribute"
-version = "1.0.8"
+version = "1.0.9"
 environment = "roblox"
 link = "TypedAttribute"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
-url = "https://api.wally.run/v1/package-contents/downrest/typedattribute/1.0.8"
+url = "https://api.wally.run/v1/package-contents/downrest/typedattribute/1.0.9"
 
 [[package]]
 name = "downrest/typedevent"

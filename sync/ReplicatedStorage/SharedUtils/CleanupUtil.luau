@@ -39,10 +39,8 @@ local function cleanup(trash: Trash)
 
 		(trash:: Instance):Destroy()
 	elseif type == "thread" then
-		if trash == coroutine.running() then
+		if coroutine.status((trash:: thread)) == "suspended" then
 			task.cancel((trash:: thread))
-		else
-			return -- reject anything from running any further
 		end
 	else
 		for _, destructor in DESTRUCTORS do
@@ -69,6 +67,7 @@ function CleanupUtil.Clean(bin: {[any]: Trash}, ...: string)
 		for _, trash in (bin:: {Trash}) do
 			cleanup(trash)
 		end
+		table.clear(bin)
 	end
 
 	return specifiedIndicies

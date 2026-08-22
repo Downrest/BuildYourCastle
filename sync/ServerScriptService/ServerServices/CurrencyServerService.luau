@@ -4,9 +4,9 @@ local DataServerService = require(ServerScriptService.ServerServices.DataServerS
 
 local CurrencyServerService = {}
 
-CurrencyServerService.CURRENCY_TYPES = {
-    Gold = "Gold";
-}
+function CurrencyServerService.Init()
+
+end
 
 function CurrencyServerService.CanAffordGold(
     data: DataServerService.PlayerData, 

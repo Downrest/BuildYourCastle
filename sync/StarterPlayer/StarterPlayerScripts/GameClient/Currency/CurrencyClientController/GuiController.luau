@@ -3,12 +3,12 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
 local QNum = require(ReplicatedStorage.SharedPackages.QNum)
-local CurrencySharedService = require(ReplicatedStorage.SharedServices.CurrencySharedService)
-local PlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.PlayerUtil)
+local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
+local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local GuiController = {}
 
-local interfaceGui = PlayerUtil.playerGui.Interface
+local interfaceGui = LocalPlayerUtil.playerGui.Interface
 local bottomContainer = interfaceGui.BottomContainer
 local statFrame = bottomContainer.StatFrame
 local currencyFrame = statFrame.Currency
@@ -144,7 +144,6 @@ end
 local function incrementTween(newGold: number)
     clearPreviousTweens()
     
-    task.wait()
     incrementTextTween:Play()
     incrementTextGradientTween:Play()
     incrementIconTween:Play()
@@ -164,7 +163,6 @@ end
 
 local function decrementTween(newGold: number)
     clearPreviousTweens()
-    task.wait()
 
     decrementTextTween:Play()
     decrementTextGradientTween:Play()
@@ -194,7 +192,7 @@ local function setGold(newGold: number, oldGold: number?)
             decrementTween(newGold)
         end
     else
-        tweenGoldValue.Value = newGold
+        goldText.Text = `{newGold}`
     end
 end
 
@@ -205,11 +203,24 @@ function GuiController.Mount()
         goldText.Text = QNum.format(QNum.fromNumber(newGold))
     end)
 
-    CurrencySharedService.GoldChanged.client.OnClientEvent:Connect(function(
-        newGold: number, 
-        oldGold: number?
+    DataSharedService.PlayerDataInitialized:Connect(function(
+        player,
+        dataReplicated
     )
-        setGold(newGold, oldGold)
+        if player ~= LocalPlayerUtil.player then
+            return
+        end
+
+        local playerCurrency = dataReplicated.attributes.currency
+
+        -- gold changes
+        playerCurrency.gold.Changed:Connect(function(
+            newGold,
+            oldGold
+        )
+            warn(`CHANGED GOLD... {newGold}`)
+            setGold(newGold, oldGold)
+        end)
     end)
 end
 

@@ -61,7 +61,7 @@ const ERROR_INFO_MODE: "Auto" | "Full" | "Warn" | "None"
 	= "Full"
 
 -- Imports --
-const Types = require(script.Types)
+const Types = require("@self/Types")
 
 -- Deferred Mutation Helpers --
 

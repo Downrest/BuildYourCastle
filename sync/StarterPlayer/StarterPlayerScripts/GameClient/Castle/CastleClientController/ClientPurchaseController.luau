@@ -9,7 +9,6 @@ function ClientPurchaseController.Init()
         unlockedStructureId,
         touchingPlayer
     )
-        warn(`TOUCH STRUCTURE ID.... {unlockedStructureId}`)
         CastleSharedService.ClientTouchedStructurePurchase.client:FireServer(unlockedStructureId)
     end)
 end

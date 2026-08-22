@@ -6,7 +6,6 @@ local CurrencyServerService = require(ServerScriptService.ServerServices.Currenc
 local Conch = require(ReplicatedStorage.SharedPackages.Conch)
 
 return function()
-	warn("hello?")
 	Conch.register(script.Name, {
 		permissions = {CommandsServerService.PERMS.setgold};
 		arguments = function()

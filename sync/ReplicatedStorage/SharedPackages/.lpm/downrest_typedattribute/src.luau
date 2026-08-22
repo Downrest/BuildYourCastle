@@ -5,7 +5,7 @@ local Signal = require("./packages/roblox/Signal")
 local TypedAttribute = {}
 
 export type TypedAttribute<type> = {
-    Changed: Signal.Signal<(previousValue: type, newValue: type) -> ()>;
+    Changed: Signal.Signal<(newValue: type, previousValue: type) -> ()>;
 
     Get: (self: TypedAttribute<type>) -> type;
     Set: (self: TypedAttribute<type>, setValue: type) -> ();
@@ -26,7 +26,7 @@ function TypedAttribute.new<type>(attributeName: string, defaultValue: type): Ty
             local previousValue = self._previousValue
             local newValue = self:Get()
 
-            self.Changed:Fire(previousValue, newValue)
+            self.Changed:Fire(newValue, previousValue)
             self._previousValue = newValue
         end)
     end

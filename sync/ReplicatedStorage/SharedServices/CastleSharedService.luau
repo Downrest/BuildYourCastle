@@ -1,12 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local StructureConfig = require(ReplicatedStorage.SharedConfigs.CastleConfig.StructureConfig)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local Squash = require(ReplicatedStorage.SharedPackages.Squash)
 local TypedEvent = require(ReplicatedStorage.SharedPackages.TypedEvent)
 local MapSharedService = require(ReplicatedStorage.SharedServices.MapSharedService)
 local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
-local StructureConfig = require(script.StructureConfig)
 
 local CastleSharedService = {}
 
@@ -155,8 +155,6 @@ local BIN_TAGS = {
 local PURCHASE_TOUCHED_DEBOUNCE = .5
 
 function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: BatchedCastleReplication): buffer
-    warn("ATTEMPT TO SERIALIZE!!!! ", batchCastleReplication)
-
     local cursor = Squash.cursor()
 
     batchCastleReplicationSerde.ser(cursor, batchCastleReplication)
@@ -165,8 +163,6 @@ function CastleSharedService.SerializeReplicationPacket(batchCastleReplication: 
 end
 
 function CastleSharedService.DeserializeReplicationPacket(replicationBuffer: buffer): BatchedCastleReplication
-    warn("ATTEMPT TO DESERIALIZE!!!! ", replicationBuffer)
-
     local cursor = Squash.frombuffer(replicationBuffer)
 
     return batchCastleReplicationSerde.des(cursor)
@@ -187,7 +183,6 @@ function CastleSharedService.GetRenderCastle(castleID: number): CastleRender
 end
 
 function CastleSharedService.RenderCastleReplication(castleReplication: CastleReplication)
-    warn(`REPLICATING... `, castleReplication)
     assert(renderContainer, "Attempted to render castle replication without renderContainer!")
 
     local castleRender = CastleSharedService.GetRenderCastle(castleReplication.castleID); do

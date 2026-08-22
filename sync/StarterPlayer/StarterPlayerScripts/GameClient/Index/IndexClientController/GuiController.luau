@@ -2,14 +2,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
-local GuiClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.GuiClientService)
+local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
 local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
 local TweenInfoUtil = require(ReplicatedStorage.SharedUtils.TweenInfoUtil)
-local PlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.PlayerUtil)
+local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local GuiController = {}
 
-local playerGui = PlayerUtil.playerGui
+local playerGui = LocalPlayerUtil.playerGui
 
 local interfaceGui = playerGui.Interface
 local leftContainer = interfaceGui.LeftContainer
@@ -55,7 +55,7 @@ local INDEX_CONTAINER_DEFAULT = {
 local INDEX_CONTAINER_DEFOCUS_POSITION = INDEX_CONTAINER_DEFAULT.position + UDim2.fromScale(0, 1)
 
 local INDEX_MOUNT_TWEEN_INFO = TweenInfo.new(
-    GuiClientService.MENU_FOCUS_TWEEN_INFO.Time,
+    GuiConfig.MENU_FOCUS_TWEEN_INFO.Time,
     Enum.EasingStyle.Back,
     Enum.EasingDirection.In,
     0,
@@ -67,7 +67,7 @@ local INDEX_MOUNT_TWEEN_INFO = TweenInfo.new(
 ]]
 local indexButtonIconFocusTween = TweenService:Create(
     indexButtonIcon,
-    GuiClientService.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
     {
         Size = INDEX_BUTTON_ICON_DEFAULT.size + UDim2.fromScale(.15, .15);
         Rotation = 10;
@@ -75,14 +75,14 @@ local indexButtonIconFocusTween = TweenService:Create(
 )
 local indexButtonFocusTween = TweenService:Create(
     indexButton,
-    GuiClientService.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
     {
         Size = INDEX_BUTTON_DEFAULT.size + UDim2.fromScale(.075, .075)
     }
 )
 local indexButtonIconDefocusTween = TweenService:Create(
     indexButtonIcon,
-    GuiClientService.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
     {
         Size = INDEX_BUTTON_ICON_DEFAULT.size;
         Rotation = INDEX_BUTTON_ICON_DEFAULT.rotation;
@@ -90,7 +90,7 @@ local indexButtonIconDefocusTween = TweenService:Create(
 )
 local indexButtonDefocusTween = TweenService:Create(
     indexButton,
-    GuiClientService.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
     {
         Size = INDEX_BUTTON_DEFAULT.size
     }
@@ -101,14 +101,14 @@ local indexButtonDefocusTween = TweenService:Create(
 ]]
 local indexContainerFocusTween = TweenService:Create(
     indexContainer,
-    GuiClientService.MENU_FOCUS_TWEEN_INFO,
+    GuiConfig.MENU_FOCUS_TWEEN_INFO,
     {
         Position = INDEX_CONTAINER_DEFAULT.position
     }
 )
 local indexContainerDefocusTween = TweenService:Create(
     indexContainer,
-    GuiClientService.MENU_DEFOCUS_TWEEN_INFO,
+    GuiConfig.MENU_DEFOCUS_TWEEN_INFO,
     {
         Position = INDEX_CONTAINER_DEFOCUS_POSITION
     }
@@ -143,14 +143,14 @@ local indexCloseTriggerTween = TweenService:Create(
 )
 local indexCloseFocusTween = TweenService:Create(
     indexClose,
-    GuiClientService.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
     {
         Size = INDEX_CLOSE_DEFAULT.size + UDim2.fromScale(.025, .025)
     }
 )
 local indexCloseDefocusTween = TweenService:Create(
     indexClose,
-    GuiClientService.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
     {
         Size = INDEX_CLOSE_DEFAULT.size
     }

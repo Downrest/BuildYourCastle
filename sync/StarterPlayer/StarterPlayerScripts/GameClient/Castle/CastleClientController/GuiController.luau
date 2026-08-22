@@ -2,13 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
-local GuiClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.GuiClientService)
+local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
 local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
-local PlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.PlayerUtil)
+local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local GuiController = {}
 
-local interfaceGui = PlayerUtil.playerGui.Interface
+local interfaceGui = LocalPlayerUtil.playerGui.Interface
 local topContainer = interfaceGui.TopContainer
 local topButtonFrame = topContainer.TopButtonFrame
 local castleButton = topButtonFrame.CastleButton
@@ -19,14 +19,14 @@ local CASTLE_BUTTON_DEFAULT = {
 
 local castleButtonFocusTween = TweenService:Create(
     castleButton,
-    GuiClientService.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_FOCUS_TWEEN_INFO,
     {
         Size = CASTLE_BUTTON_DEFAULT.size + UDim2.fromScale(.25, .25)
     }
 )
 local castleButtonDefocusTween = TweenService:Create(
     castleButton,
-    GuiClientService.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_BUTTON_DEFOCUS_TWEEN_INFO,
     {
         Size = CASTLE_BUTTON_DEFAULT.size
     }
