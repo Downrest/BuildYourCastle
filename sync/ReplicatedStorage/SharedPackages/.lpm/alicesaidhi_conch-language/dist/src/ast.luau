@@ -1,7 +1,7 @@
-local ast = require "@self/ast"
-local display = require "@self/display"
-local parse = require "@self/parse"
-local visit = require "@self/visit"
+local ast = require "./ast/ast"
+local display = require "./ast/display"
+local parse = require "./ast/parse"
+local visit = require "./ast/visit"
 
 export type Visitor<State> = visit.Visitor<State>
 

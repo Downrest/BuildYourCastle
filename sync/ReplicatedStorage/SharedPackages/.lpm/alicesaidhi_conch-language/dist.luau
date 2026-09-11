@@ -1,4 +1,4 @@
-local main = require("@self/lib")
+local main = require("./dist/lib")
 export type LanguageVm = main. LanguageVm 
 export type TypeAnalysisInfo = main. TypeAnalysisInfo 
 export type SimpleValue = main. SimpleValue 

@@ -3,9 +3,17 @@ local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
-StarterPlayer:WaitForChild("StarterPlayerScripts")
-local LoadingClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.LoadingClientService)
-local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
+
+local LoadingClientService = require(StarterPlayer
+    :WaitForChild("StarterPlayerScripts")
+    :WaitForChild("ClientServices")
+    :WaitForChild("LoadingClientService")
+)
+local LocalPlayerUtil = require(StarterPlayer
+    :WaitForChild("StarterPlayerScripts")
+    :WaitForChild("ClientUtils")
+    :WaitForChild("LocalPlayerUtil")
+)
 
 local loadingFolder = ReplicatedFirst.Loading
 local loadingAssets = loadingFolder.LoadingAssets
@@ -16,12 +24,7 @@ local progressBar = loadingContainer.ProgressBar
 local PROGRESS_BAR_DEFAULTS = {
     size = progressBar.Size;
 }
-local PRELOAD_ASSET = {}:: {any}; do
-    table.insert(PRELOAD_ASSET, loadingGui)
-    for _, asset in loadingGui:GetDescendants() do
-        table.insert(PRELOAD_ASSET, asset)
-    end
-end
+local PRELOAD_ASSET = {}:: {any}
 local PRELOAD_ASSET_AMOUNT = #PRELOAD_ASSET
 
 local containerDefocusTween = TweenService:Create(
@@ -68,7 +71,10 @@ do
 
     -- has loaded
     do
-        LoadingClientService.HasLoaded:Fire()
+        task.defer(function()
+            LoadingClientService.HasLoaded:Fire()
+        end)
+        warn(`FIREDDDD`)
         exitGui()
     end
 end

@@ -15,16 +15,16 @@ function PurchaseServerService.PurchaseCastleStructure(player: Player, structure
         
         -- conditional flags
         do
-            if not CurrencyServerService.CanAffordGold(data, structureCost) then
+            if not CurrencyServerService.CanAffordGold(player, data, structureCost) then
                 return false
             end
-            assert(CastleServerService.IsStructureUnlockable(data, structureID), `{player} cannot unlock structure ID {structureID}`)
+            assert(CastleServerService.IsStructureUnlockable(player, data, structureID), `{player} cannot unlock structure ID {structureID}`)
         end
 
         -- process data mutation
         do
-            local goldIncrementSuccess = CurrencyServerService.IncrementGold(data, -structureCost)
-            local structureUnlockSuccess = CastleServerService.UnlockStructure(data, structureID)
+            local goldIncrementSuccess = CurrencyServerService.IncrementGold(player, data, -structureCost)
+            local structureUnlockSuccess = CastleServerService.UnlockStructure(player, data, structureID)
 
             return 
                 goldIncrementSuccess 

@@ -27,7 +27,6 @@ local lobbyIsland = MapSharedService.LOBBY_ISLAND
 local sharedAssets = ReplicatedStorage.SharedAssets
 local castleAssets = sharedAssets.Castle
 local castleIslandModel = castleAssets.CastleIsland
-
 local castleConstants = castleAssets.Constants
 
 local renderContainer
@@ -99,15 +98,6 @@ export type CastleRender = {
 
 export type StructureConfig = StructureConfig.StructureConfig
 
-CastleSharedService.STRUCTURE_NAMES = StructureConfig.STRUCTURE_NAMES
-CastleSharedService.STRUCTURE_NAME_TO_ASSET = StructureConfig.STRUCTURE_NAME_TO_ASSET
-CastleSharedService.STRUCTURE_CONFIG_DATA = StructureConfig.STRUCTURE_CONFIG_DATA
-CastleSharedService.UNRENDER_CONTAINER = script.Unrendered
-CastleSharedService.STRUCTURE_STATES = {
-    ToPurchase = "ToPurchase";
-    AlreadyPurchased = "AlreadyPurchased";
-}
-
 CastleSharedService.ClientReplicationReady =
     TypedEvent.newReliable("ClientReplicationReady"):: TypedEvent.ClientToServer<any>
 CastleSharedService.ReplicationPacket =
@@ -118,12 +108,27 @@ CastleSharedService.ClientTouchedStructurePurchase =
 CastleSharedService.ServerPurchaseStatus =
     TypedEvent.newReliable("ServerPurchaseStatus"):: TypedEvent.ServerToClient<(purchaseSuccess: boolean) -> ()>
 
+-- CastleSharedService.UnlockedFirstFloor =
+--     TypedEvent.newReliable("UnlockedFirstFloor"):: TypedEvent.ServerToClient<any>
+
 CastleSharedService.StructurePurchaseTouched = 
     Signal.new<<(structureID: string, touchingPlayer: Player) -> ()>>()
 CastleSharedService.StructureRendered = 
     Signal.new<<(structureAsset: DefaultStructure, currentState: string) -> ()>>()
 CastleSharedService.StructureStateChanged = 
     Signal.new<<(structureAsset: DefaultStructure, newState: string, oldState: string) -> ()>>()
+
+CastleSharedService.FLOOR_NAMES = StructureConfig.FLOOR_NAMES
+CastleSharedService.FLOOR_END_STRUCTURES = StructureConfig.FLOOR_END_STRUCTURES
+
+CastleSharedService.STRUCTURE_NAMES = StructureConfig.STRUCTURE_NAMES
+CastleSharedService.STRUCTURE_NAME_TO_ASSET = StructureConfig.STRUCTURE_NAME_TO_ASSET
+CastleSharedService.STRUCTURE_CONFIG_DATA = StructureConfig.STRUCTURE_CONFIG_DATA
+CastleSharedService.UNRENDER_CONTAINER = script.Unrendered
+CastleSharedService.STRUCTURE_STATES = {
+    ToPurchase = "ToPurchase";
+    AlreadyPurchased = "AlreadyPurchased";
+}
 
 local CASTLE_ID_DATA = {
     [1] = {

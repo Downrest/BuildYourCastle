@@ -14,6 +14,7 @@ QNum = { name = "notiku/qnum", version = "^", index = "wally" }
 Conch = { name = "alicesaidhi/conch", version = "^", index = "wally" }
 ConchUI = { name = "alicesaidhi/conch-ui", version = "^", index = "wally" }
 Squash = { name = "data-oriented-house/squash", version = "^", index = "wally" }
+Vide = { name = "centau/vide", version = "^", index = "wally" }
 
 [patches]
 "osyrisrblx/t@3.1.1" = "patches/osyrisrblx_t@3.1.1.patch"

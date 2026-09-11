@@ -1,0 +1,5 @@
+local module = {}
+
+-- ACT AS ABSTRACTION FOR DATASHARESDSERVICE, USSEEEE VIDE STATESS!!!
+
+return module

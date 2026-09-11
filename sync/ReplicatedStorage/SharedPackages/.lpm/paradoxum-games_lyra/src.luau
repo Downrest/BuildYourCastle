@@ -8,9 +8,9 @@
 	Users of the library should typically only need to require this top-level module.
 ]=]
 
-local Log = require("@self/Log")
-local Migrations = require("@self/Migrations")
-local PlayerStore = require("@self/PlayerStore")
+local Log = require("./src/Log")
+local Migrations = require("./src/Migrations")
+local PlayerStore = require("./src/PlayerStore")
 
 --[=[
 	Provides helper functions for creating common migration steps.

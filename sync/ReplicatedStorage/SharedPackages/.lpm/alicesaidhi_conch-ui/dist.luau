@@ -1,2 +1,2 @@
-local main = require("@self/lib")
+local main = require("./dist/lib")
 return main

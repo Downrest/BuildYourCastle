@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local StructureConfig = require(ReplicatedStorage.SharedConfigs.CastleConfig.StructureConfig)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
@@ -42,6 +43,9 @@ CastleServerService.CastleCacheList = {}:: {CastleCache}
 local playerToCastleCache = {}:: {[Player]: CastleCache}
 
 local MAX_CASTLES = 4
+-- local FLOOR_1_END_STRUCTURE = StructureConfig.FLOOR_END_STRUCTURES[
+--     StructureConfig.FLOOR_NAMES.Floor1
+-- ]["end"]
 
 local function getVacantCastleCache(): CastleCache?
     local currentIndex = 1
@@ -76,14 +80,15 @@ local function updatePlayerCastleCache(player: Player, data: DataServerService.P
         assert(playerCastleCache, `No castle cache for {player}?`)
     end
 
-    local previousCastleCache, newCastleCache
+	local previousCastleCache: CastleCache = TableUtil.DeepCopy(
+		playerCastleCache
+	)
+	local newCastleCache: CastleCache = TableUtil.DeepCopy(
+		playerCastleCache
+	)
 
     -- avoid redundant writes
     if playerCastleCache.castleData ~= data.castle then
-        previousCastleCache = TableUtil.DeepCopy(
-            playerCastleCache
-        )
-
         playerCastleCache.castleData = data.castle
         newCastleCache = playerCastleCache
     end
@@ -139,14 +144,27 @@ function CastleServerService.Init()
                 return
             end
 
-            local newCastleCache, previousCastleCache = updatePlayerCastleCache(player, data)
+            do
+                local playerCastleCache = playerToCastleCache[player]:: CastleCache<Player, CastleData>; do
+                    assert(playerCastleCache, `No castle cache for {player}?`)
+                end
 
-            CastleServerService.PlayerCastleChanged:Fire(
-                player, 
-                newCastleCache.castleID, 
-                newCastleCache.castleData.structureData,
-                previousCastleCache.castleData.structureData
-            )
+                local previousCastleCache = TableUtil.DeepCopy(playerCastleCache)
+                local newCastleCache: CastleCache<Player, CastleData>
+            
+                -- avoid redundant writes
+                if playerCastleCache.castleData ~= data.castle then
+                    playerCastleCache.castleData = data.castle
+                    newCastleCache = playerCastleCache
+
+                    CastleServerService.PlayerCastleChanged:Fire(
+                        player, 
+                        newCastleCache.castleID, 
+                        newCastleCache.castleData.structureData,
+                        previousCastleCache.castleData.structureData
+                    )
+                end
+            end
         end)
 
         Players.PlayerRemoving:Connect(function(player)
@@ -168,8 +186,12 @@ function CastleServerService.GetStructureConfig(structureID: string): CastleShar
     return (CastleSharedService.STRUCTURE_CONFIG_DATA:: {[string]: CastleSharedService.StructureConfig})[structureID]
 end
 
-function CastleServerService.IsStructureUnlockable(data: DataServerService.PlayerData, structureID: string): boolean
-    local structureData = data.castle.structureData[structureID]; do
+function CastleServerService.IsStructureUnlockable(
+    player: Player, 
+    playerData: DataServerService.PlayerData, 
+    structureID: string
+): boolean
+    local structureData = playerData.castle.structureData[structureID]; do
         assert(structureData, `Structure ID {structureID} not found?`)
     end
 
@@ -186,8 +208,12 @@ function CastleServerService.IsStructureUnlockable(data: DataServerService.Playe
         and not isUnlocked
 end
 
-function CastleServerService.UnlockStructure(data: DataServerService.PlayerData, structureID: string): boolean
-    local unlockedStructureData = data.castle.structureData[structureID]; do
+function CastleServerService.UnlockStructure(
+    player: Player, 
+    playerData: DataServerService.PlayerData, 
+    structureID: string
+): boolean
+    local unlockedStructureData = playerData.castle.structureData[structureID]; do
         assert(unlockedStructureData, `Structure ID {structureID} not found in structure data?`)
     end
 
@@ -203,13 +229,29 @@ function CastleServerService.UnlockStructure(data: DataServerService.PlayerData,
 
         -- set purchaseable to new progression structures
         for _, structureID in purchaseableStructures do
-            local purchaseableStructureData = data.castle.structureData[structureID]; do
+            local purchaseableStructureData = playerData.castle.structureData[structureID]; do
                 if not purchaseableStructures then
                     continue
                 end
             end
 
             purchaseableStructureData[1] = true
+        end
+    end
+
+    for floorName in CastleSharedService.FLOOR_NAMES:: {[string]: string} do
+        local floorStructures = CastleSharedService.FLOOR_END_STRUCTURES[floorName]; do
+            assert(floorStructures, `Failed to acknowledge any structures from {floorName}`)
+        end
+        local endStructure = floorStructures["end"]
+        local isFloorUnlocked = playerData.castle.floorUnlocked[floorName]
+
+        if 
+            endStructure == structureID
+            and not isFloorUnlocked
+        then
+            warn(`UNLOCKED {floorName}`)
+            playerData.castle.floorUnlocked[floorName] = true
         end
     end
 

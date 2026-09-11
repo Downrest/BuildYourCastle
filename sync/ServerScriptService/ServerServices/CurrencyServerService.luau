@@ -9,6 +9,7 @@ function CurrencyServerService.Init()
 end
 
 function CurrencyServerService.CanAffordGold(
+    player: Player,
     data: DataServerService.PlayerData, 
     cost: number
 ): boolean
@@ -16,6 +17,7 @@ function CurrencyServerService.CanAffordGold(
 end
 
 function CurrencyServerService.IncrementGold(
+    player: Player,
     data: DataServerService.PlayerData, 
     increment: number
 ): boolean

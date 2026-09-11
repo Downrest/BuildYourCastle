@@ -1,6 +1,6 @@
 local RunService = game:GetService("RunService")
 
-local Types = require("@self/Types")
+local Types = require("./src/Types")
 
 local Event = {}
 

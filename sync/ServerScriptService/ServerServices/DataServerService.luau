@@ -8,32 +8,12 @@ local DataConfig = require(script.DataConfig)
 
 local DataServerService = {}
 
-export type CurrencyData = {
-    gold: number;
-}
+export type CurrencyData = DataConfig.CurrencyData
 
-export type CastleStructureData = {
-    --[[
-        [structureID -> string]
-    ]]
-    [string]: 
-    --[[
-        {isPurchaseable -> boolean, isUnlocked -> boolean}
-    ]]
-        {boolean};
-}
-export type CastleData = {
-    popularity: number;
-    --[[
-        [structureID -> string]: {isPurchaseable -> boolean, isUnlocked -> boolean}
-    ]]
-    structureData: CastleStructureData;
-}
+export type CastleStructureData = DataConfig.CastleStructureData
+export type CastleData = DataConfig.CastleData
 
-export type PlayerData = {
-    currency: CurrencyData;
-    castle: CastleData;
-}
+export type PlayerData = DataConfig.PlayerData
 
 DataServerService.DataServiceInitialized = Signal.new()
 DataServerService.PlayerDataChanged = Signal.new<<(player: Player, newData: PlayerData, oldData: PlayerData?) -> ()>>()
@@ -51,8 +31,9 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
     schema = DataConfig.DATA_SCHEMA;
     changedCallbacks = {
         function(userId, newData, oldData)
-            local player = Players:GetPlayerByUserId(tonumber(userId):: number)
-            assert(player, `Failed to translate {userId} into player?`)
+            local player = Players:GetPlayerByUserId(tonumber(userId):: number); do 
+                assert(player, `Failed to translate {userId} into player?`)
+            end
 
             if not table.find(playersDataLoaded, player) then
                 return
@@ -115,9 +96,26 @@ local function replicateData(
     end
     local attributes = replicationData.attributes
 
+    warn(`CHANGED DATA..... old `, oldData, `vs new `, newData)
+
     -- gold
     if not oldData or newData.currency.gold ~= oldData.currency.gold then
+        warn(`NEW GOLD DATA`)
         attributes.currency.gold:Set(newData.currency.gold)
+	end
+	
+    -- unlocked floor
+    if not oldData or newData.castle.floorUnlocked ~= oldData.castle.floorUnlocked then
+        warn(`HELLO????? NEW FLOOR DATA`)
+        attributes.castle.floorUnlocked.floor1:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor1])
+        attributes.castle.floorUnlocked.floor2:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor2])
+        attributes.castle.floorUnlocked.floor3:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor3])
+        attributes.castle.floorUnlocked.floor4:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor4])
+    end
+
+    -- finished tutorial
+    if not oldData or newData.castle.tutorialFinished ~= oldData.castle.tutorialFinished then
+        attributes.castle.tutorialFinished:Set(newData.castle.tutorialFinished)
     end
 end
 

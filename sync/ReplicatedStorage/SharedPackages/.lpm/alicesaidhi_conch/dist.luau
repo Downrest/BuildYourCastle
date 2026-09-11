@@ -1,4 +1,4 @@
-local main = require("@self/lib")
+local main = require("./dist/lib")
 export type Log = main. Log 
 export type CommandContext = main. CommandContext 
 export type Stream = main. Stream 

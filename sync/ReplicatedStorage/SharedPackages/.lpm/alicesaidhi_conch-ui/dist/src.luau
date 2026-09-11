@@ -1,13 +1,13 @@
 local Players = game:GetService "Players"
 local UserInputService = game:GetService "UserInputService"
 
-local app = require "@self/app"
+local app = require "./src/app"
 local conch = require "./roblox_packages/conch"
-local plugin_api = require "@self/plugin_api"
-local runtime_plugin_api = require "@self/runtime_plugin_api"
-local state = require "@self/state"
-local theme = require "@self/theme"
-local version = require "@self/api_version"
+local plugin_api = require "./src/plugin_api"
+local runtime_plugin_api = require "./src/runtime_plugin_api"
+local state = require "./src/state"
+local theme = require "./src/theme"
+local version = require "./src/api_version"
 local vide = require "./roblox_packages/vide"
 
 local mounted = false

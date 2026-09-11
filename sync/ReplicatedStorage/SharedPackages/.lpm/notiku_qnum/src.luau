@@ -1,10 +1,10 @@
 --!strict
 
-local Core = require("@self/Core")
-local Operations = require("@self/Operations")
-local Compare = require("@self/Compare")
-local Format = require("@self/Format")
-local Types = require("@self/Types")
+local Core = require("./src/Core")
+local Operations = require("./src/Operations")
+local Compare = require("./src/Compare")
+local Format = require("./src/Format")
+local Types = require("./src/Types")
 
 export type QNumValue = {
 	mantissa: number,

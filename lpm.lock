@@ -31,6 +31,7 @@ url = "https://api.wally.run/v1/package-contents/alicesaidhi/conch-ui/0.4.0"
 name = "centau/vide"
 version = "0.4.1"
 environment = "roblox"
+link = "Vide"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
 url = "https://api.wally.run/v1/package-contents/centau/vide/0.4.1"
@@ -46,12 +47,12 @@ url = "https://api.wally.run/v1/package-contents/data-oriented-house/squash/5.0.
 
 [[package]]
 name = "downrest/typedattribute"
-version = "1.0.9"
+version = "1.1.4"
 environment = "roblox"
 link = "TypedAttribute"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
-url = "https://api.wally.run/v1/package-contents/downrest/typedattribute/1.0.9"
+url = "https://api.wally.run/v1/package-contents/downrest/typedattribute/1.1.4"
 
 [[package]]
 name = "downrest/typedevent"
