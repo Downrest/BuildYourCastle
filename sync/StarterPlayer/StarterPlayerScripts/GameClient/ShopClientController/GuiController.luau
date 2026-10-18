@@ -34,11 +34,19 @@ local shopButtonDefocusTween = TweenService:Create(
 
 local guiBin = Janitor.new()
 
+function GuiController.Init()
+    GuiController.Dismount()
+end
+
 function GuiController.Mount()
+    -- exit tween
+    guiBin:Add(function()
+        shopButtonDefocusTween:Play()
+    end)
+
 	guiBin:Add(shopButton.MouseEnter:Connect(function()
         shopButtonFocusTween:Play()
 	end))
-    
     guiBin:Add(shopButton.MouseLeave:Connect(function()
         shopButtonDefocusTween:Play()
     end))

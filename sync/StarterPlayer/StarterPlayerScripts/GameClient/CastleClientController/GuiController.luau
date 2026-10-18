@@ -35,10 +35,14 @@ local castleButtonDefocusTween = TweenService:Create(
 local guiBin = Janitor.new()
 
 function GuiController.Mount()
+    -- exit tween
+    guiBin:Add(function()
+        castleButtonDefocusTween:Play()
+    end)
+
 	guiBin:Add(castleButton.MouseEnter:Connect(function()
         castleButtonFocusTween:Play()
 	end))
-    
     guiBin:Add(castleButton.MouseLeave:Connect(function()
         castleButtonDefocusTween:Play()
     end))

@@ -23,12 +23,6 @@ function InterfaceClientController.Init()
         TopController.Init()
         LeftController.Init()
         BottomController.Init()
-
-        --TODO: add a field in each player data for checking if theyve gotten past the first cutscene
-        InterfaceClientService.GameFirstlyIntroduced(true)
-
-        -- TODO: TEST
-        InterfaceClientService.IsInterfaceEnabled(true)
     end
 
     -- first floor reached
@@ -45,7 +39,7 @@ function InterfaceClientController.Init()
 
         local isGameFirstlyIntroduced = Vide.untrack(InterfaceClientService.GameFirstlyIntroduced)
 
-        warn(`TOGGLING... IS SLOW? {isGameFirstlyIntroduced}`)
+        warn(`TOGGLING INTERFACE TO {isInterfaceEnabled}`)
         LeftController.Toggle(isInterfaceEnabled, isGameFirstlyIntroduced)
         BottomController.Toggle(isInterfaceEnabled, isGameFirstlyIntroduced)
         TopController.Toggle(isInterfaceEnabled and firstFloorReached, isGameFirstlyIntroduced)

@@ -3,7 +3,7 @@ local ShopClientController = {}
 local GuiController = require(script.GuiController)
 
 function ShopClientController.Init()
-    GuiController.Mount()
+    GuiController.Init()
 end
 
 return ShopClientController

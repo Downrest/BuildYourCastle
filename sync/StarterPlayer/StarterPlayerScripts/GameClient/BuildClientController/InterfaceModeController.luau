@@ -40,6 +40,11 @@ function InterfaceModeController.Init()
 end
 
 function InterfaceModeController.Mount()
+    -- exit tween
+    interfaceModeBin:Add(function()
+        buildButtonDefocusTween:Play()
+    end)
+
 	interfaceModeBin:Add(buildButton.MouseEnter:Connect(function()
         buildButtonFocusTween:Play()
 	end))
@@ -48,7 +53,6 @@ function InterfaceModeController.Mount()
     end))
 
     interfaceModeBin:Add(buildButton.Activated:Connect(function()
-        warn(`ACTIVATED!!`)
         BuildClientService.IsBuildMode(true)
     end))
 end

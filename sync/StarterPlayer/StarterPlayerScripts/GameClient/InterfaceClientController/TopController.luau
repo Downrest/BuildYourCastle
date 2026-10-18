@@ -13,7 +13,7 @@ local TOP_CONTAINER_DEFAULTS = {
     position = topContainer.Position;
 }
 local TOP_FOCUS_POSITION = TOP_CONTAINER_DEFAULTS.position
-local TOP_DEFOCUS_POSITION = TOP_CONTAINER_DEFAULTS.position + UDim2.fromScale(0, -3)
+local TOP_DEFOCUS_POSITION = TOP_CONTAINER_DEFAULTS.position + UDim2.fromScale(0, -.5)
 
 local TOP_FOCUS_TWEEN_SLOW = TweenService:Create(
     topContainer,

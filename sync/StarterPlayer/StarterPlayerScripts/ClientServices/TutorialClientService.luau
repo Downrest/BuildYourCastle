@@ -10,10 +10,10 @@ TutorialClientService.TutorialFinished = Vide.source(
     DataClientService.PlayerState.castle.tutorialFinished:Get()
 )
 
-function TutorialClientService.Init()
-    Vide.effect(function()
-        TutorialClientService.TutorialFinished()
-    end)
-end
+-- function TutorialClientService.Init()
+--     Vide.effect(function()
+--         TutorialClientService.TutorialFinished()
+--     end)
+-- end
 
 return TutorialClientService

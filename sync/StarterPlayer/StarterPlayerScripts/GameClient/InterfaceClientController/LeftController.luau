@@ -13,7 +13,7 @@ local LEFT_CONTAINER_DEFAULTS = {
     position = leftContainer.Position;
 }
 local LEFT_FOCUS_POSITION = LEFT_CONTAINER_DEFAULTS.position
-local LEFT_DEFOCUS_POSITION = LEFT_CONTAINER_DEFAULTS.position + UDim2.fromScale(-3, 0)
+local LEFT_DEFOCUS_POSITION = LEFT_CONTAINER_DEFAULTS.position + UDim2.fromScale(-.5, 0)
 
 local LEFT_FOCUS_TWEEN_SLOW = TweenService:Create(
     leftContainer,

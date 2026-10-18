@@ -13,7 +13,7 @@ local BOTTOM_CONTAINER_DEFAULTS = {
     position = bottomContainer.Position;
 }
 local BOTTOM_FOCUS_POSITION = BOTTOM_CONTAINER_DEFAULTS.position
-local BOTTOM_DEFOCUS_POSITION = BOTTOM_CONTAINER_DEFAULTS.position + UDim2.fromScale(0, 3)
+local BOTTOM_DEFOCUS_POSITION = BOTTOM_CONTAINER_DEFAULTS.position + UDim2.fromScale(0, .5)
 
 local BOTTOM_FOCUS_TWEEN_SLOW = TweenService:Create(
     bottomContainer,

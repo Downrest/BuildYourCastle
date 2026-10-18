@@ -13,12 +13,12 @@ LoaderUtil.scope(function()
 		LoaderUtil.Boot(ReplicatedStorage.SharedServices.NPCSharedService)
 
 		-- server
-		LoaderUtil.Boot(ServerScriptService.ServerServices.CastleServerService, true)
-		LoaderUtil.Boot(ServerScriptService.ServerServices.CommandsServerService, true)
-		LoaderUtil.Boot(ServerScriptService.ServerServices.CurrencyServerService, true)
-		LoaderUtil.Boot(ServerScriptService.ServerServices.DataServerService, true)
-		LoaderUtil.Boot(ServerScriptService.ServerServices.TutorialServerService, true)
-		LoaderUtil.Boot(ServerScriptService.ServerServices.TransactionServerService, true)
+		LoaderUtil.Require(ServerScriptService.ServerServices.CastleServerService)
+		LoaderUtil.Require(ServerScriptService.ServerServices.CommandsServerService)
+		LoaderUtil.Require(ServerScriptService.ServerServices.CurrencyServerService)
+		LoaderUtil.Require(ServerScriptService.ServerServices.DataServerService)
+		LoaderUtil.Require(ServerScriptService.ServerServices.TutorialServerService)
+		LoaderUtil.Require(ServerScriptService.ServerServices.TransactionServerService)
 	end
 
 	-- CONTROLLERS

@@ -10,8 +10,15 @@ BuildClientService.CATEGORY_NAMES = {
     Nature = "Nature";
     Special = "Special";
 }
-BuildClientService.CurrentCategory = Vide.source("")
+BuildClientService.BUTTON_SELECTIONS = {
+    Select = "Select";
+    Move = "Move";
+    Rotate = "Rotate";
+    Delete = "Delete";
+}
 
+BuildClientService.CurrentCategory = Vide.source("")
+BuildClientService.CurrentButtonSelection = Vide.source("")
 BuildClientService.IsBuildMode = Vide.source(false)
 
 return BuildClientService

@@ -64,7 +64,7 @@ local function replicatePlayerState(
 	player: Player,
 	newData: PlayerData
 )
-    -- fyi, ...Set() automatically rejects redundant mutations
+	-- fyi, ...Set() automatically rejects redundant mutations
 	local stateReplica = playerStreams[player]
 
 	stateReplica.currency.gold:Set(newData.currency.gold)
@@ -74,7 +74,7 @@ local function replicatePlayerState(
 	stateReplica.castle.floorUnlocked.floor3:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor3])
 	stateReplica.castle.floorUnlocked.floor4:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor4])
 
-    stateReplica.castle.tutorialFinished:Set(newData.castle.tutorialFinished)
+	stateReplica.castle.tutorialFinished:Set(newData.castle.tutorialFinished)
 end
 
 local function onPlayerAdded(callback: (player: Player) -> ())
@@ -97,7 +97,7 @@ function DataServerService.Init()
 			newData,
 			oldData
 		)
-            replicatePlayerState(player, newData)
+			replicatePlayerState(player, newData)
 		end)
 	end
 
