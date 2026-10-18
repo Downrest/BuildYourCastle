@@ -77,36 +77,21 @@ local function replicatePlayerState(
     stateReplica.castle.tutorialFinished:Set(newData.castle.tutorialFinished)
 end
 
-local function playerAdded(player: Player)
-	if table.find(playersDataLoaded, player) then
-		return
+local function onPlayerAdded(callback: (player: Player) -> ())
+	for _, player in Players:GetPlayers() do
+		callback(player)
 	end
 
-	playerStore:loadAsync(player); do
-		local loadedData = DataServerService.GetPlayerDataAsync(player)
-
-		DataServerService.PlayerDataObserved:Fire(player, loadedData)
-		replicatePlayerState(player, loadedData)
-		table.insert(playersDataLoaded, player)
-	end
+	Players.PlayerAdded:Connect(callback)
 end
 
-local function playerRemoving(player: Player)
-	assert(table.find(playersDataLoaded, player), "Player was not loaded initially? Must be a bug")
-
-	playerStore:unloadAsync(player); do
-		DataServerService.PlayerDataReleased:Fire(player)
-		table.remove(playersDataLoaded, table.find(playersDataLoaded, player))
-	end
+local function onPlayerRemoving(callback: (player: Player, exitReason: Enum.PlayerExitReason) -> ())
+	Players.PlayerRemoving:Connect(callback)
 end
 
 function DataServerService.Init()
 	-- data replication
 	do
-		Players.PlayerAdded:Connect(function(player)
-			playerStreams[player] = DataSharedService.PlayerStream:Replica(player)
-		end)
-
 		DataServerService.PlayerDataObserved:Connect(function(
 			player,
 			newData,
@@ -116,19 +101,34 @@ function DataServerService.Init()
 		end)
 	end
 
-	-- player added
-	do
-		for _, player in Players:GetPlayers() do
-			playerAdded(player)
+	onPlayerAdded(function(player: Player)
+		-- replicate shared gamestate
+		do
+			playerStreams[player] = DataSharedService.PlayerStream:Replica(player)
 		end
-		Players.PlayerAdded:Connect(function(player)
-			playerAdded(player)
-		end)
-	end
 
-	-- player removing
-	Players.PlayerRemoving:Connect(function(player)
-		playerRemoving(player)
+		-- load server playerstate
+		do
+			playerStore:loadAsync(player); do
+				local loadedData = DataServerService.GetPlayerDataAsync(player)
+
+				DataServerService.PlayerDataObserved:Fire(player, loadedData)
+				replicatePlayerState(player, loadedData)
+				table.insert(playersDataLoaded, player)
+			end
+		end
+	end)
+
+	onPlayerRemoving(function(player: Player)
+		assert(table.find(playersDataLoaded, player), "Player was not loaded initially? Must be a bug")
+
+		-- unload + save server playerstate
+		do
+			playerStore:unloadAsync(player); do
+				DataServerService.PlayerDataReleased:Fire(player)
+				table.remove(playersDataLoaded, table.find(playersDataLoaded, player))
+			end
+		end
 	end)
 
 	-- game close
