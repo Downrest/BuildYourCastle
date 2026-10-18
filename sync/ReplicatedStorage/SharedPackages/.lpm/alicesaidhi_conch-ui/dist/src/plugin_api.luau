@@ -8,8 +8,8 @@ This additionally implements a miniscule serde layer, as functions need to likel
 be transferred between virtual machines.
 ]]
 
-local folder = require "./plugin_api/folder"
-local semver = require "./plugin_api/semver"
+local folder = require "@self/folder"
+local semver = require "@self/semver"
 
 type PluginAPI<T> = {
 	version: { major: number, minor: number, patch: number },

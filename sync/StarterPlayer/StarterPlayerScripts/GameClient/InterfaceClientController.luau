@@ -1,9 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
+local DataClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.DataClientService)
 local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 local InterfaceClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.InterfaceClientService)
-local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
 local TutorialClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.TutorialClientService)
 local LocalPlayerUtil = require(game:GetService("StarterPlayer").StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
@@ -16,15 +16,6 @@ local InterfaceClientController = {}
 local interfaceGui = LocalPlayerUtil.playerGui.Interface
 
 function InterfaceClientController.Init()
-    Vide.effect(function()
-        local firstFloorReached = InterfaceClientService.IsFirstFloorReached()
-        local isInterfaceEnabled = InterfaceClientService.IsInterfaceEnabled()
-
-        LeftController.Toggle(isInterfaceEnabled, true)
-        BottomController.Toggle(isInterfaceEnabled, true)
-        TopController.Toggle(isInterfaceEnabled and firstFloorReached, true)
-    end)
-
     -- init
     do
         interfaceGui.Enabled = true
@@ -33,26 +24,41 @@ function InterfaceClientController.Init()
         LeftController.Init()
         BottomController.Init()
 
+        --TODO: add a field in each player data for checking if theyve gotten past the first cutscene
+        InterfaceClientService.GameFirstlyIntroduced(true)
+
         -- TODO: TEST
-        InterfaceClientService.ToggleInterface(true)
+        InterfaceClientService.IsInterfaceEnabled(true)
     end
 
-    DataSharedService.LocalPlayerDataInitialized:Once(function(replicatedData)
-        local floor1Unlocked = replicatedData.attributes.castle.floorUnlocked.floor1
-
-        floor1Unlocked.Changed:Connect(function(
-            newUnlock,
-            oldUnlock
-        )
-            if newUnlock then
-                warn(`WOWW WE NEED TO DO IT ASAP`)
-                InterfaceClientService.SetFirstFloorReached(true)
-            end
-        end)
+    -- first floor reached
+    DataClientService.PlayerState.castle.floorUnlocked.floor1.Observed(function(newUnlock, oldUnlock)
+        if newUnlock then
+            InterfaceClientService.IsFirstFloorReached(true)
+        end
     end)
 
-    TutorialClientService.HasTutorialEnded:Once(function()
-        InterfaceClientService.ToggleInterface(true)
+    -- interface toggling
+    Vide.effect(function()
+        local firstFloorReached = InterfaceClientService.IsFirstFloorReached()
+        local isInterfaceEnabled = InterfaceClientService.IsInterfaceEnabled()
+
+        local isGameFirstlyIntroduced = Vide.untrack(InterfaceClientService.GameFirstlyIntroduced)
+
+        warn(`TOGGLING... IS SLOW? {isGameFirstlyIntroduced}`)
+        LeftController.Toggle(isInterfaceEnabled, isGameFirstlyIntroduced)
+        BottomController.Toggle(isInterfaceEnabled, isGameFirstlyIntroduced)
+        TopController.Toggle(isInterfaceEnabled and firstFloorReached, isGameFirstlyIntroduced)
+    end)
+
+    -- tutorial finished
+    Vide.effect(function()
+        if not TutorialClientService.TutorialFinished() then
+            return
+        end
+
+        InterfaceClientService.IsInterfaceEnabled(true)
+        InterfaceClientService.GameFirstlyIntroduced(false)
     end)
 end
 

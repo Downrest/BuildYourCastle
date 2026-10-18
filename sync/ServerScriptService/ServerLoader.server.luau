@@ -16,7 +16,8 @@ do
     LoaderUtil.Boot(ServerScriptService.ServerServices.CommandsServerService, true)
     LoaderUtil.Boot(ServerScriptService.ServerServices.CurrencyServerService, true)
     LoaderUtil.Boot(ServerScriptService.ServerServices.DataServerService, true)
-    LoaderUtil.Boot(ServerScriptService.ServerServices.PurchaseServerService, true)
+    LoaderUtil.Boot(ServerScriptService.ServerServices.TutorialServerService, true)
+    LoaderUtil.Boot(ServerScriptService.ServerServices.TransactionServerService, true)
 end
 
 -- CONTROLLERS

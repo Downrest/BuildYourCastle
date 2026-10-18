@@ -46,6 +46,15 @@ type = "zip"
 url = "https://api.wally.run/v1/package-contents/data-oriented-house/squash/5.0.0"
 
 [[package]]
+name = "downrest/replicator"
+version = "1.0.1"
+environment = "roblox"
+link = "Replicator"
+index = "https://github.com/UpliftGames/wally-index"
+type = "zip"
+url = "https://api.wally.run/v1/package-contents/downrest/replicator/1.0.1"
+
+[[package]]
 name = "downrest/typedattribute"
 version = "1.1.4"
 environment = "roblox"
@@ -72,6 +81,15 @@ type = "zip"
 url = "https://api.wally.run/v1/package-contents/evaera/promise/4.0.0"
 
 [[package]]
+name = "nezuo/delta-compress"
+version = "0.1.3"
+environment = "roblox"
+link = "DeltaCompress"
+index = "https://github.com/UpliftGames/wally-index"
+type = "zip"
+url = "https://api.wally.run/v1/package-contents/nezuo/delta-compress/0.1.3"
+
+[[package]]
 name = "notiku/qnum"
 version = "0.2.1"
 environment = "roblox"
@@ -82,16 +100,12 @@ url = "https://api.wally.run/v1/package-contents/notiku/qnum/0.2.1"
 
 [[package]]
 name = "nowoshire/namedsignal"
-version = "2.3.2"
+version = "2.3.4"
 environment = "roblox"
 link = "Signal"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
-url = "https://api.wally.run/v1/package-contents/nowoshire/namedsignal/2.3.2"
-
-[package.patch]
-path = "patches/nowoshire_namedsignal@2.3.2.patch"
-hash = "84af46ed0bdc8c2d"
+url = "https://api.wally.run/v1/package-contents/nowoshire/namedsignal/2.3.4"
 
 [[package]]
 name = "osyrisrblx/t"

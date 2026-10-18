@@ -2,14 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
-local Signal = require(ReplicatedStorage.SharedPackages.Signal)
+local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
-local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local BuildClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.BuildClientService)
 local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local InterfaceModeController = {}
-
-InterfaceModeController.PressedBuildButton = Signal.new()
 
 local interfaceGui = LocalPlayerUtil.playerGui.Interface
 local topContainer = interfaceGui.TopContainer
@@ -35,27 +33,28 @@ local buildButtonDefocusTween = TweenService:Create(
     }
 )
 
-local interfaceModeBin = {}
+local interfaceModeBin = Janitor.new()
 
 function InterfaceModeController.Init()
     InterfaceModeController.Mount()
 end
 
 function InterfaceModeController.Mount()
-	CleanupUtil.InsertBin(interfaceModeBin, buildButton.MouseEnter:Connect(function()
+	interfaceModeBin:Add(buildButton.MouseEnter:Connect(function()
         buildButtonFocusTween:Play()
 	end))
-    CleanupUtil.InsertBin(interfaceModeBin, buildButton.MouseLeave:Connect(function()
+    interfaceModeBin:Add(buildButton.MouseLeave:Connect(function()
         buildButtonDefocusTween:Play()
     end))
 
-    CleanupUtil.InsertBin(interfaceModeBin, buildButton.Activated:Connect(function()
-        InterfaceModeController.PressedBuildButton:Fire()
+    interfaceModeBin:Add(buildButton.Activated:Connect(function()
+        warn(`ACTIVATED!!`)
+        BuildClientService.IsBuildMode(true)
     end))
 end
 
 function InterfaceModeController.Dismount()
-	CleanupUtil.Clean(interfaceModeBin)
+	interfaceModeBin:Cleanup()
 end
 
 return InterfaceModeController

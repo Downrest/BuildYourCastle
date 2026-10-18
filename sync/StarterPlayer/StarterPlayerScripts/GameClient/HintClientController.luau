@@ -1,6 +1,6 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
-local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
+local DataClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.DataClientService)
 local GuiController = require(script.GuiController)
 
 local HintClientController = {}
@@ -8,17 +8,10 @@ local HintClientController = {}
 function HintClientController.Init()
     GuiController.Init()
 
-    DataSharedService.LocalPlayerDataInitialized:Connect(function(dataReplicated)
-        local playerFloorUnlocked = dataReplicated.attributes.castle.floorUnlocked
-
-        playerFloorUnlocked.floor1.Changed:Connect(function(
-            newUnlock,
-            oldUnlock
-        )
-            if newUnlock then
-                GuiController.HintFirstFloorReached()
-            end
-        end)
+    DataClientService.PlayerState.castle.floorUnlocked.floor1.Observed(function(newUnlock, oldUnlock)
+        if newUnlock then
+            GuiController.HintFirstFloorReached()
+        end
     end)
 end
 

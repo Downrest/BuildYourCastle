@@ -5,7 +5,7 @@ local TweenService = game:GetService("TweenService")
 local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
 local TutorialClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.TutorialClientService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
-local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 local DialogueConfig = require(script.Parent.TutorialConfigs.DialogueConfig)
 
@@ -23,8 +23,8 @@ local dialogueText = dialogueFrame.DialogueText
 local skipButton = dialogueFrame.Skip
 
 local currentDialogueIndex = 1
-local guiBin = {}
-local perDialogueBin = {}
+local guiBin = Janitor.new()
+local perDialogueBin = Janitor.new()
 
 local SKIP_BUTTON_DEFAULTS = {
     position = skipButton.Position;
@@ -94,7 +94,7 @@ local function toggleSkipButton(isVisible: boolean)
 end
 
 local function nextDialogue(skipAnimation: boolean?)
-    CleanupUtil.Clean(perDialogueBin)
+    perDialogueBin:Cleanup()
 
     currentDialogueIndex += 1; do 
         -- last dialogue signal
@@ -118,19 +118,19 @@ local function nextDialogue(skipAnimation: boolean?)
     dialogueText.Text = dialogueString
 
     if not skipAnimation then
-        CleanupUtil.InsertBin(perDialogueBin, TweenService:Create(
+        perDialogueBin:Add(TweenService:Create(
             dialogueText,
             TweenInfo.new(dialogueTweenDuration, Enum.EasingStyle.Linear),
             {
                 MaxVisibleGraphemes = utf8.len(dialogueString);
             }
-        )):Play()
+        ), "Pause"):Play()
 
         dialogueText.MaxVisibleGraphemes = 0
         frameBounceTween:Play()
     end
 
-    CleanupUtil.InsertBin(perDialogueBin, task.delay(dialogueTweenDuration + DialogueConfig.DIALOGUE_COOLDOWN, function()
+    perDialogueBin:Add(task.delay(dialogueTweenDuration + DialogueConfig.DIALOGUE_COOLDOWN, function()
         DialogueGuiController.NextDialogue:Fire()
     end))
 end
@@ -155,19 +155,19 @@ function DialogueGuiController.StartDialogue()
     end
 
     -- after frame has fully focused!
-    CleanupUtil.Clean(guiBin, frameFocusTween.Completed:Once(function()
+    guiBin:Add(frameFocusTween.Completed:Once(function()
         toggleSkipButton(true)
 
         -- dialogue
         do
             nextDialogue()
-            CleanupUtil.InsertBin(guiBin, DialogueGuiController.NextDialogue:Connect(function()
+            guiBin:Add(DialogueGuiController.NextDialogue:Connect(function()
                 nextDialogue()
             end))
 
-            CleanupUtil.InsertBin(guiBin, DialogueGuiController.EndedDialogue:Connect(function()
+            guiBin:Add(DialogueGuiController.EndedDialogue:Connect(function()
                 frameDefocusTween:Play()
-                CleanupUtil.InsertBin(guiBin, frameDefocusTween.Completed:Once(function()
+                guiBin:Add(frameDefocusTween.Completed:Once(function()
                     DialogueGuiController.StopDialogue()
                 end))
             end))
@@ -175,18 +175,18 @@ function DialogueGuiController.StartDialogue()
 
         -- skip button
         do
-            CleanupUtil.InsertBin(guiBin, skipButton.MouseEnter:Connect(function()
+            guiBin:Add(skipButton.MouseEnter:Connect(function()
                 skipFocusTween:Play()
             end))
-            CleanupUtil.InsertBin(guiBin, skipButton.MouseLeave:Connect(function()
+            guiBin:Add(skipButton.MouseLeave:Connect(function()
                 skipDefocusTween:Play()
             end))
-            CleanupUtil.InsertBin(guiBin, skipButton.Activated:Connect(function()
+            guiBin:Add(skipButton.Activated:Connect(function()
                 skipProcessTween:Play()
                 DialogueGuiController.NextDialogue:Fire()
             end))
             
-            CleanupUtil.InsertBin(guiBin, DialogueGuiController.ReachedLastDialogue:Connect(function()
+            guiBin:Add(DialogueGuiController.ReachedLastDialogue:Connect(function()
                 toggleSkipButton(false)
             end))
         end
@@ -194,9 +194,9 @@ function DialogueGuiController.StartDialogue()
 end
 
 function DialogueGuiController.StopDialogue()
-    TutorialClientService.HasTutorialEnded:Fire()
+    TutorialClientService.TutorialFinished(true)
 
-    CleanupUtil.Clean(guiBin)
+    guiBin:Cleanup()
     dialogueGui.Enabled = false
 end
 

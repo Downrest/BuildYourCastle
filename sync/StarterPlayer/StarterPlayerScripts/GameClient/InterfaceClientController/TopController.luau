@@ -17,14 +17,14 @@ local TOP_DEFOCUS_POSITION = TOP_CONTAINER_DEFAULTS.position + UDim2.fromScale(0
 
 local TOP_FOCUS_TWEEN_SLOW = TweenService:Create(
     topContainer,
-    GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_FOCUS_SLOW_TWEEN_INFO,
     {
         Position = TOP_FOCUS_POSITION;
     }
 )
 local TOP_DEFOCUS_TWEEN_SLOW = TweenService:Create(
     topContainer,
-    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_SLOW_TWEEN_INFO,
     {
         Position = TOP_DEFOCUS_POSITION;
     }
@@ -32,14 +32,14 @@ local TOP_DEFOCUS_TWEEN_SLOW = TweenService:Create(
 
 local TOP_FOCUS_TWEEN_DEFAULT = TweenService:Create(
     topContainer,
-    GuiConfig.MENU_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO,
     {
         Position = TOP_FOCUS_POSITION;
     }
 )
 local TOP_DEFOCUS_TWEEN_DEFAULT = TweenService:Create(
     topContainer,
-    GuiConfig.MENU_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO,
     {
         Position = TOP_DEFOCUS_POSITION;
     }

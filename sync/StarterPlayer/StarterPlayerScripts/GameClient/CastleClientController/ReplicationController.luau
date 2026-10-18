@@ -128,21 +128,18 @@ local function renderCacheCleanup(structureAsset: CastleSharedService.DefaultStr
     renderCache[structureAsset] = nil
 end
 
-function ReplicationController.Init()
-    CastleSharedService.InitRender()
-    CastleSharedService.ClientReplicationReady.client:FireServer()
-    
-    CastleSharedService.ReplicationPacket.client.OnClientEvent:Connect(function(
+local function processReplicationBuffer(replicationBuffer: buffer)
+    local batchedCastleReplication = CastleSharedService.DeserializeReplicationPacket(
         replicationBuffer
     )
-        local batchedCastleReplication = CastleSharedService.DeserializeReplicationPacket(
-            replicationBuffer
-        )
 
-        for _, castleReplication in batchedCastleReplication do
-            CastleSharedService.RenderCastleReplication(castleReplication)
-        end
-    end)
+    for _, castleReplication in batchedCastleReplication do
+        CastleSharedService.RenderCastleReplication(castleReplication)
+    end
+end
+
+function ReplicationController.Init()
+    CastleSharedService.InitRender()
 
     CastleSharedService.StructureRendered:Connect(function(
         structureAsset,
@@ -172,6 +169,16 @@ function ReplicationController.Init()
             renderCacheCleanup(structureAsset) 
         end
     end)
+
+    -- rendering
+    do
+        -- full write initially
+        processReplicationBuffer(
+            CastleSharedService.RequestTotalReplicationPackets.client:InvokeServer()
+        )
+        
+        CastleSharedService.ReplicationPacket.client.OnClientEvent:Connect(processReplicationBuffer)
+    end
 end
 
 return ReplicationController

@@ -17,14 +17,14 @@ local LEFT_DEFOCUS_POSITION = LEFT_CONTAINER_DEFAULTS.position + UDim2.fromScale
 
 local LEFT_FOCUS_TWEEN_SLOW = TweenService:Create(
     leftContainer,
-    GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_FOCUS_SLOW_TWEEN_INFO,
     {
         Position = LEFT_FOCUS_POSITION;
     }
 )
 local LEFT_DEFOCUS_TWEEN_SLOW = TweenService:Create(
     leftContainer,
-    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_SLOW_TWEEN_INFO,
     {
         Position = LEFT_DEFOCUS_POSITION;
     }
@@ -32,14 +32,14 @@ local LEFT_DEFOCUS_TWEEN_SLOW = TweenService:Create(
 
 local LEFT_FOCUS_TWEEN_DEFAULT = TweenService:Create(
     leftContainer,
-    GuiConfig.MENU_FOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO,
     {
         Position = LEFT_FOCUS_POSITION;
     }
 )
 local LEFT_DEFOCUS_TWEEN_DEFAULT = TweenService:Create(
     leftContainer,
-    GuiConfig.MENU_DEFOCUS_TWEEN_INFO,
+    GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO,
     {
         Position = LEFT_DEFOCUS_POSITION;
     }

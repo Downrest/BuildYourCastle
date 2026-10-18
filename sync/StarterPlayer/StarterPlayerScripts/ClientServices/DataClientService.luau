@@ -1,5 +1,11 @@
-local module = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
--- ACT AS ABSTRACTION FOR DATASHARESDSERVICE, USSEEEE VIDE STATESS!!!
+local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
+local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
 
-return module
+local DataClientService = {}
+
+DataClientService.PlayerState = DataSharedService.PlayerStream:Replica(LocalPlayerUtil.player)
+
+return DataClientService

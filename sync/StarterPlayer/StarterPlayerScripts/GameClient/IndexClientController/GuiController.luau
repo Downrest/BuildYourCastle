@@ -3,7 +3,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
 local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
-local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 local TweenInfoUtil = require(ReplicatedStorage.SharedUtils.TweenInfoUtil)
 local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
@@ -156,7 +156,7 @@ local indexCloseDefocusTween = TweenService:Create(
     }
 )
 
-local guiBin = {}
+local guiBin = Janitor.new()
 
 local isIndexVisible = false
 
@@ -182,17 +182,17 @@ function GuiController.Mount()
 
     -- index button
 	do
-        CleanupUtil.InsertBin(guiBin, indexButton.MouseEnter:Connect(function()
+        guiBin:Add(indexButton.MouseEnter:Connect(function()
             indexButtonIconFocusTween:Play()
             indexButtonFocusTween:Play()
         end))
     
-        CleanupUtil.InsertBin(guiBin, indexButton.MouseLeave:Connect(function()
+        guiBin:Add(indexButton.MouseLeave:Connect(function()
             indexButtonIconDefocusTween:Play()
             indexButtonDefocusTween:Play()
         end))
     
-        CleanupUtil.InsertBin(guiBin, indexButton.Activated:Connect(function()
+        guiBin:Add(indexButton.Activated:Connect(function()
             isIndexVisible = not isIndexVisible
     
             GuiController.ToggleIndex(isIndexVisible)
@@ -203,15 +203,15 @@ function GuiController.Mount()
     do
         -- index close
         do
-            CleanupUtil.InsertBin(guiBin, indexClose.MouseEnter:Connect(function()
+            guiBin:Add(indexClose.MouseEnter:Connect(function()
                 indexCloseFocusTween:Play()
             end))
         
-            CleanupUtil.InsertBin(guiBin, indexClose.MouseLeave:Connect(function()
+            guiBin:Add(indexClose.MouseLeave:Connect(function()
                 indexCloseDefocusTween:Play()
             end))
         
-            CleanupUtil.InsertBin(guiBin, indexClose.Activated:Connect(function()
+            guiBin:Add(indexClose.Activated:Connect(function()
                 isIndexVisible = not isIndexVisible
         
                 indexCloseTriggerTween:Play()
@@ -223,7 +223,7 @@ end
 
 function GuiController.Dismount()
     indexGui.Enabled = false
-	CleanupUtil.Clean(guiBin)
+	guiBin:Cleanup()
 end
 
 

@@ -1,6 +1,6 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
-local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
+local DataClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.DataClientService)
 local GuiController = require(script.GuiController)
 
 local CurrencyClientController = {}
@@ -8,16 +8,8 @@ local CurrencyClientController = {}
 function CurrencyClientController.Init()
     GuiController.Init()
 
-    DataSharedService.LocalPlayerDataInitialized:Connect(function(dataReplicated)
-        local playerCurrency = dataReplicated.attributes.currency
-
-        -- gold changes
-        playerCurrency.gold.Changed:Connect(function(
-            newGold,
-            oldGold
-        )
-            GuiController.SetGold(newGold, oldGold)
-        end)
+    DataClientService.PlayerState.currency.gold.Observed(function(newGold, oldGold)
+        GuiController.SetGold(newGold, oldGold)
     end)
 end
 

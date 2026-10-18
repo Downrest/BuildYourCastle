@@ -1,16 +1,16 @@
 local Players = game:GetService "Players"
 local RunService = game:GetService "RunService"
 
-local arguments = require "./src/arguments"
-local bootstrap = require "./src/bootstrap"
-local client = require "./src/client"
-local console = require "./src/console"
-local context = require "./src/context"
+local arguments = require "@self/arguments"
+local bootstrap = require "@self/bootstrap"
+local client = require "@self/client"
+local console = require "@self/console"
+local context = require "@self/context"
 local language = require "./roblox_packages/language"
-local net = require "./src/net"
-local state = require "./src/state"
-local types = require "./src/types"
-local user = require "./src/user"
+local net = require "@self/net"
+local state = require "@self/state"
+local types = require "@self/types"
+local user = require "@self/user"
 
 export type Log = types.Log
 export type CommandContext = types.CommandContext

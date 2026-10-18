@@ -3,7 +3,6 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
 local QNum = require(ReplicatedStorage.SharedPackages.QNum)
-local DataSharedService = require(ReplicatedStorage.SharedServices.DataSharedService)
 local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local GuiController = {}

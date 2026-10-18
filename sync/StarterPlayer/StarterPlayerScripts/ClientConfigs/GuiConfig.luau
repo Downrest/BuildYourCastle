@@ -1,12 +1,23 @@
 local GuiConfig = {}
 
-GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO = TweenInfo.new(
+GuiConfig.INTERFACE_CONTAINER_FOCUS_SLOW_TWEEN_INFO = TweenInfo.new(
     2.5,
     Enum.EasingStyle.Quart,
     Enum.EasingDirection.InOut
 )
-GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO = TweenInfo.new(
+GuiConfig.INTERFACE_CONTAINER_DEFOCUS_SLOW_TWEEN_INFO = TweenInfo.new(
     2.5,
+    Enum.EasingStyle.Quart,
+    Enum.EasingDirection.Out
+)
+
+GuiConfig.INTERFACE_CONTAINER_FOCUS_TWEEN_INFO = TweenInfo.new(
+    .25,
+    Enum.EasingStyle.Quart,
+    Enum.EasingDirection.InOut
+)
+GuiConfig.INTERFACE_CONTAINER_DEFOCUS_TWEEN_INFO = TweenInfo.new(
+    .25,
     Enum.EasingStyle.Quart,
     Enum.EasingDirection.Out
 )

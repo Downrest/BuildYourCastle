@@ -4,9 +4,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StructureConfig = require(ReplicatedStorage.SharedConfigs.CastleConfig.StructureConfig)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local Squash = require(ReplicatedStorage.SharedPackages.Squash)
-local TypedEvent = require(ReplicatedStorage.SharedPackages.TypedEvent)
+local TypedRemote = require(ReplicatedStorage.SharedPackages.TypedRemote)
+
 local MapSharedService = require(ReplicatedStorage.SharedServices.MapSharedService)
-local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 
 local CastleSharedService = {}
 
@@ -87,7 +88,7 @@ export type DefaultStructure = GenericStructure
 export type StructureRenderData = {
     asset: DefaultStructure;
     state: string;
-    bin: {CleanupUtil.Trash?};
+    bin: Janitor;
 }
 export type CastleRender = {
 	castleIslandModel: typeof(castleIslandModel);
@@ -98,18 +99,16 @@ export type CastleRender = {
 
 export type StructureConfig = StructureConfig.StructureConfig
 
-CastleSharedService.ClientReplicationReady =
-    TypedEvent.newReliable("ClientReplicationReady"):: TypedEvent.ClientToServer<any>
+CastleSharedService.RequestTotalReplicationPackets =
+    TypedRemote.newFunction("RequestTotalReplication"):: TypedRemote.FromServerFunction<() -> buffer>
+    
 CastleSharedService.ReplicationPacket =
-    TypedEvent.newReliable("ReplicationPacket"):: TypedEvent.ServerToClient<(replicationBuffer: buffer) -> ()>
+    TypedRemote.newReliableEvent("ReplicationPacket"):: TypedRemote.ToClientEvent<(replicationBuffer: buffer) -> ()>
 
 CastleSharedService.ClientTouchedStructurePurchase =
-    TypedEvent.newReliable("ClientTouchedStructurePurchase"):: TypedEvent.ClientToServer<(structureID: string) -> ()>
+    TypedRemote.newReliableEvent("ClientTouchedStructurePurchase"):: TypedRemote.ToServerEvent<(structureID: string) -> ()>
 CastleSharedService.ServerPurchaseStatus =
-    TypedEvent.newReliable("ServerPurchaseStatus"):: TypedEvent.ServerToClient<(purchaseSuccess: boolean) -> ()>
-
--- CastleSharedService.UnlockedFirstFloor =
---     TypedEvent.newReliable("UnlockedFirstFloor"):: TypedEvent.ServerToClient<any>
+    TypedRemote.newReliableEvent("ServerPurchaseStatus"):: TypedRemote.ToClientEvent<(purchaseSuccess: boolean) -> ()>
 
 CastleSharedService.StructurePurchaseTouched = 
     Signal.new<<(structureID: string, touchingPlayer: Player) -> ()>>()
@@ -243,7 +242,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
                         previousState
                     )
 
-                    CleanupUtil.Clean(structureBin, BIN_TAGS.PURCHASE_PAD_TOUCHED)
+                    structureBin:Remove(BIN_TAGS.PURCHASE_PAD_TOUCHED)
                     purchaseDebounces[unlockedStructureID] = nil
                 end
 
@@ -256,7 +255,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
                     structureModel.Parent = castleRender.castleIslandModel.Progression
 				end
 				local structureConfig = CastleSharedService.STRUCTURE_CONFIG_DATA[unlockedStructureID]
-                local structureBin = {}
+                local structureBin = Janitor.new()
 
 				-- create constants available to structure
 				do
@@ -291,7 +290,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 							end
 
 							-- purchase pad touched
-							CleanupUtil.InsertBin(structureBin, 
+							structureBin:Add( 
 								hitboxPart.Touched:Connect(function(part)
 									if purchaseDebounces[unlockedStructureID] then
 										return
@@ -310,7 +309,7 @@ function CastleSharedService.RenderCastleReplication(castleReplication: CastleRe
 
 									CastleSharedService.StructurePurchaseTouched:Fire(unlockedStructureID, player)
 
-								end), BIN_TAGS.PURCHASE_PAD_TOUCHED
+								end), nil, BIN_TAGS.PURCHASE_PAD_TOUCHED
 							)
 						end
 					end

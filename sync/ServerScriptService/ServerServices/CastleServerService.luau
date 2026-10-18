@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local StructureConfig = require(ReplicatedStorage.SharedConfigs.CastleConfig.StructureConfig)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
@@ -43,9 +42,6 @@ CastleServerService.CastleCacheList = {}:: {CastleCache}
 local playerToCastleCache = {}:: {[Player]: CastleCache}
 
 local MAX_CASTLES = 4
--- local FLOOR_1_END_STRUCTURE = StructureConfig.FLOOR_END_STRUCTURES[
---     StructureConfig.FLOOR_NAMES.Floor1
--- ]["end"]
 
 local function getVacantCastleCache(): CastleCache?
     local currentIndex = 1
@@ -59,44 +55,42 @@ local function getVacantCastleCache(): CastleCache?
     return castleCache
 end
 
-local function pushPlayerIntoVacantCastle(player: Player): CastleCache<Player, CastleData>
+local function pushPlayerIntoVacantCastle(player: Player, data: DataServerService.PlayerData): CastleCache<Player, CastleData>
     local vacantCastleCache = getVacantCastleCache(); do
         assert(vacantCastleCache, `No more vacant castles for {player}?`)
     end
-    local playerData = DataServerService.GetPlayerDataAsync(player); do
-        assert(playerData, `No player data for {player}?`)
-    end
+    assert(data, `Attempted to push {player} into vacant castle without player data!`)
 
     vacantCastleCache.owner = player
-    vacantCastleCache.castleData = playerData.castle
+    vacantCastleCache.castleData = data.castle
 
     playerToCastleCache[player] = vacantCastleCache
 
     return vacantCastleCache:: CastleCache<Player, CastleData>
 end
 
-local function updatePlayerCastleCache(player: Player, data: DataServerService.PlayerData): (CastleCache<Player, CastleData>, CastleCache<Player, CastleData>)
-    local playerCastleCache = playerToCastleCache[player]; do
-        assert(playerCastleCache, `No castle cache for {player}?`)
-    end
+-- local function updatePlayerCastleCache(player: Player, data: DataServerService.PlayerData): (CastleCache<Player, CastleData>, CastleCache<Player, CastleData>)
+--     local playerCastleCache = playerToCastleCache[player]; do
+--         assert(playerCastleCache, `No castle cache for {player}?`)
+--     end
 
-	local previousCastleCache: CastleCache = TableUtil.DeepCopy(
-		playerCastleCache
-	)
-	local newCastleCache: CastleCache = TableUtil.DeepCopy(
-		playerCastleCache
-	)
+-- 	local previousCastleCache: CastleCache = TableUtil.DeepCopy(
+-- 		playerCastleCache
+-- 	)
+-- 	local newCastleCache: CastleCache = TableUtil.DeepCopy(
+-- 		playerCastleCache
+-- 	)
 
-    -- avoid redundant writes
-    if playerCastleCache.castleData ~= data.castle then
-        playerCastleCache.castleData = data.castle
-        newCastleCache = playerCastleCache
-    end
+--     -- avoid redundant writes
+--     if playerCastleCache.castleData ~= data.castle then
+--         playerCastleCache.castleData = data.castle
+--         newCastleCache = playerCastleCache
+--     end
 
-    return 
-        newCastleCache:: CastleCache<Player, CastleData>,
-        previousCastleCache:: CastleCache<Player, CastleData>
-end
+--     return 
+--         newCastleCache:: CastleCache<Player, CastleData>,
+--         previousCastleCache:: CastleCache<Player, CastleData>
+-- end
 
 local function cleanupPlayerCastle(player: Player): number
     local playerCastleCache = playerToCastleCache[player]; do
@@ -128,23 +122,8 @@ function CastleServerService.Init()
 
     -- castle cache lifecycles + data updates
     do
-        DataServerService.PlayerDataLoaded:Connect(function(player)
-            local castleCache = pushPlayerIntoVacantCastle(player)
-            
-            CastleServerService.PlayerCastleInitialized:Fire(
-                player, 
-                castleCache.castleID, 
-                castleCache.castleData.structureData
-            )
-        end)
-
-        DataServerService.PlayerDataChanged:Connect(function(player, data)
-            -- player castle not yet existing? probably hasnt initialized yet (for CastleServerService)
-            if not playerToCastleCache[player] then
-                return
-            end
-
-            do
+        DataServerService.PlayerDataObserved:Connect(function(player, data)
+            if playerToCastleCache[player] then
                 local playerCastleCache = playerToCastleCache[player]:: CastleCache<Player, CastleData>; do
                     assert(playerCastleCache, `No castle cache for {player}?`)
                 end
@@ -164,6 +143,14 @@ function CastleServerService.Init()
                         previousCastleCache.castleData.structureData
                     )
                 end
+            else
+                local castleCache = pushPlayerIntoVacantCastle(player, data)
+            
+                CastleServerService.PlayerCastleInitialized:Fire(
+                    player, 
+                    castleCache.castleID, 
+                    castleCache.castleData.structureData
+                )
             end
         end)
 
@@ -216,7 +203,6 @@ function CastleServerService.UnlockStructure(
     local unlockedStructureData = playerData.castle.structureData[structureID]; do
         assert(unlockedStructureData, `Structure ID {structureID} not found in structure data?`)
     end
-
     local structureConfig = CastleServerService.GetStructureConfig(structureID); do
         assert(structureConfig, `Structure ID {structureID} without valid config?`)
     end
@@ -229,12 +215,13 @@ function CastleServerService.UnlockStructure(
 
         -- set purchaseable to new progression structures
         for _, structureID in purchaseableStructures do
-            local purchaseableStructureData = playerData.castle.structureData[structureID]; do
-                if not purchaseableStructures then
-                    continue
-                end
+            warn(`LOOPING THRU {structureID}`)
+            local purchaseableStructureData = playerData.castle.structureData[structureID]
+            if not purchaseableStructures then
+                continue
             end
 
+            warn(purchaseableStructureData)
             purchaseableStructureData[1] = true
         end
     end

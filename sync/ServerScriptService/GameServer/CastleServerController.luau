@@ -2,10 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
-local TableUtil = require(ReplicatedStorage.SharedUtils.TableUtil)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
-local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
-local PurchaseServerService = require(ServerScriptService.ServerServices.PurchaseServerService)
+local TransactionServerService = require(ServerScriptService.ServerServices.TransactionServerService)
 local ReplicationController = require(script.ReplicationController)
 
 local CastleServerController = {}
@@ -16,25 +14,28 @@ function CastleServerController.Init()
         CastleServerService.Init()
     end
 
-    -- replicate all existing cache to initialized player
-    CastleSharedService.ClientReplicationReady.server.OnServerEvent:Connect(function(
-        player
-    )
+    CastleSharedService.RequestTotalReplicationPackets.server.OnServerInvoke = function(player: Player)
+        local batchedReplicationData = {}:: {CastleSharedService.CastleReplication}
+
         for _, castleCache in CastleServerService.GetCastleCacheList() do
             local castleID = castleCache.castleID
             local castleStructureData = castleCache.castleData 
                 and castleCache.castleData.structureData
                 or {}
 
-            ReplicationController.ReplicatePlayer(
-                player, 
+            table.insert(
+                batchedReplicationData,
                 ReplicationController.CastleCacheToReplication(
                     castleID,
                     castleStructureData
                 )
             )
         end
-    end)
+
+        return CastleSharedService.SerializeReplicationPacket(
+            batchedReplicationData
+        )
+    end
 
     -- replicate initialized player cache to rest of players
     CastleServerService.PlayerCastleInitialized:Connect(function(
@@ -106,7 +107,7 @@ function CastleServerController.Init()
         player,
         structureID
     )
-        local purchaseSuccess = PurchaseServerService.PurchaseCastleStructure(
+        local purchaseSuccess = TransactionServerService.PurchaseCastleStructure(
             player,
             structureID
         )

@@ -1,10 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- ReplicatedFirst interacts w/ LoadingClientService, so u have to do this first
 ReplicatedStorage:WaitForChild("SharedPackages")
-local Signal = require(ReplicatedStorage.SharedPackages.Signal)
+local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
 local LoadingClientService = {}
 
-LoadingClientService.HasLoaded = Signal.new()
+LoadingClientService.IsLoaded = Vide.source(false)
 
 return LoadingClientService

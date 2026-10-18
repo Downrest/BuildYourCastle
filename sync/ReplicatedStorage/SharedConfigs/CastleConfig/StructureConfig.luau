@@ -290,8 +290,7 @@ export type StructureConfig = {
 
 StructureConfig.STRUCTURE_CONFIG_DATA = {
     -- 1ST FLOOR
-    -- [StructureConfig.STRUCTURE_NAMES.Pathway1] = { title = "Pathway", cost = { gold = 30 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Bushes1 } };
-    [StructureConfig.STRUCTURE_NAMES.Pathway1] = { title = "Pathway", cost = { gold = 30 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Walls7 } };
+    [StructureConfig.STRUCTURE_NAMES.Pathway1] = { title = "Pathway", cost = { gold = 30 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Bushes1 } };
     [StructureConfig.STRUCTURE_NAMES.Bushes1] = { title = "Bushes", cost = { gold = 65 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Bushes2 }  };
     [StructureConfig.STRUCTURE_NAMES.Bushes2] = { title = "Bushes", cost = { gold = 65 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Staircase1 } };
     [StructureConfig.STRUCTURE_NAMES.Staircase1] = { title = "Staircase", cost = { gold = 100 }, purchaseable = { StructureConfig.STRUCTURE_NAMES.Lamps1 } };

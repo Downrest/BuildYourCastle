@@ -3,7 +3,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 
 local GuiConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.GuiConfig)
-local CleanupUtil = require(ReplicatedStorage.SharedUtils.CleanupUtil)
+local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.LocalPlayerUtil)
 
 local GuiController = {}
@@ -32,20 +32,20 @@ local castleButtonDefocusTween = TweenService:Create(
     }
 )
 
-local guiBin = {}
+local guiBin = Janitor.new()
 
 function GuiController.Mount()
-	CleanupUtil.InsertBin(guiBin, castleButton.MouseEnter:Connect(function()
+	guiBin:Add(castleButton.MouseEnter:Connect(function()
         castleButtonFocusTween:Play()
 	end))
     
-    CleanupUtil.InsertBin(guiBin, castleButton.MouseLeave:Connect(function()
+    guiBin:Add(castleButton.MouseLeave:Connect(function()
         castleButtonDefocusTween:Play()
     end))
 end
 
 function GuiController.Dismount()
-	CleanupUtil.Clean(guiBin)
+	guiBin:Cleanup()
 end
 
 return GuiController

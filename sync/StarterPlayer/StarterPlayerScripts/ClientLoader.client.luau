@@ -15,6 +15,7 @@ Vide.root(function()
         LoaderUtil.Boot(ReplicatedStorage.SharedServices.NPCSharedService)
 
         -- client
+        LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.DataClientService)
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.BuildClientService)
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.CastleClientService)
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.LoadingClientService)
@@ -37,8 +38,5 @@ Vide.root(function()
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.GameClient.TutorialClientController)
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.GameClient.VIPClientController)
         LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.GameClient.HintClientController)
-
-        -- -- on data
-        -- LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.GameClient.DataClientController)
     end
 end)

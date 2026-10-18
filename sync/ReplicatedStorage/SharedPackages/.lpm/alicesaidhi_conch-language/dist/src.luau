@@ -1,7 +1,7 @@
-local analyze = require "./src/analysis"
-local ast = require "./src/ast"
-local display = require "./src/ast/display"
-local treewalker = require "./src/treewalker"
+local analyze = require "@self/analysis"
+local ast = require "@self/ast"
+local display = require "@self/ast/display"
+local treewalker = require "@self/treewalker"
 
 export type LanguageVm = analyze.LanguageVm
 export type TypeAnalysisInfo = analyze.TypeAnalysisInfo
