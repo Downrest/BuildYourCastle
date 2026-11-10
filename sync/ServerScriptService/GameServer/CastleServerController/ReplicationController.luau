@@ -3,8 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
+local CastleReplicationSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleReplicationSharedService)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
-local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
 
 local ReplicationController = {}
 
@@ -15,7 +16,7 @@ local RESUMING_STEP_RATE = 1/40
 local stepRate = INITIAL_STEP_RATE
 local stepAccumulator = 0
 
-type ReplicationQueue = {CastleSharedService.CastleReplication}
+type ReplicationQueue = {CastleReplicationSharedService.CastleReplication}
 
 local generalReplicationQueue = {
     head = 0;
@@ -43,7 +44,7 @@ end
 
 function ReplicationController.Init()
     do
-        CastleSharedService.InitRender(true)
+        CastleRenderSharedService.InitRender(true)
     end
 
     RunService.Heartbeat:Connect(function(deltaTime)
@@ -65,8 +66,8 @@ function ReplicationController.Init()
         if #generalReplicationQueue > 0 then
             local batchedReplicationData = popReplicationFromQueue(generalReplicationQueue)
 
-            CastleSharedService.ReplicationPacket.server:FireAllClients(
-                CastleSharedService.SerializeReplicationPacket(batchedReplicationData)
+            CastleReplicationSharedService.ReplicationPacket.server:FireAllClients(
+                CastleReplicationSharedService.SerializeReplicationPacket(batchedReplicationData)
             )
         end
 
@@ -77,9 +78,9 @@ function ReplicationController.Init()
 
             local batchedReplicationData = popReplicationFromQueue(replicationQueue)
 
-            CastleSharedService.ReplicationPacket.server:FireClient(
+            CastleReplicationSharedService.ReplicationPacket.server:FireClient(
                 player,
-                CastleSharedService.SerializeReplicationPacket(batchedReplicationData)
+                CastleReplicationSharedService.SerializeReplicationPacket(batchedReplicationData)
             )
         end
     end)
@@ -112,14 +113,14 @@ function ReplicationController.RegisterPlayer(player: Player)
     playerReplicationQueue[player] = {}
 end
 
-function ReplicationController.ReplicateToAll(castleReplication: CastleSharedService.CastleReplication)
+function ReplicationController.ReplicateToAll(castleReplication: CastleReplicationSharedService.CastleReplication)
     table.insert(generalReplicationQueue, castleReplication)
-    CastleSharedService.RenderCastleReplication(castleReplication)
+    CastleRenderSharedService.RenderCastleReplication(castleReplication)
 end
 
-function ReplicationController.ReplicatePlayer(player: Player, castleReplication: CastleSharedService.CastleReplication)
+function ReplicationController.ReplicatePlayer(player: Player, castleReplication: CastleReplicationSharedService.CastleReplication)
     table.insert(playerReplicationQueue[player], castleReplication)
-    CastleSharedService.RenderCastleReplication(castleReplication)
+    CastleRenderSharedService.RenderCastleReplication(castleReplication)
 end
 
 return ReplicationController

@@ -1,15 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
 
 local ClientPurchaseController = {}
 
 function ClientPurchaseController.Init()
-    CastleSharedService.StructurePurchaseTouched:Connect(function(
+    CastleRenderSharedService.StructurePurchaseTouched:Connect(function(
         unlockedStructureId,
         touchingPlayer
     )
-        CastleSharedService.ClientTouchedStructurePurchase.client:FireServer(unlockedStructureId)
+    CastleRenderSharedService.ClientTouchedStructurePurchase.client:FireServer(unlockedStructureId)
     end)
 end
 

@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
-local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
 local TableUtil = require(ReplicatedStorage.SharedUtils.TableUtil)
 
 local CastleServerService = {}
@@ -169,8 +169,8 @@ function CastleServerService.GetCastleCacheList(): {CastleCache}
     return CastleServerService.CastleCacheList
 end
 
-function CastleServerService.GetStructureConfig(structureID: string): CastleSharedService.StructureConfig?
-    return (CastleSharedService.STRUCTURE_CONFIG_DATA:: {[string]: CastleSharedService.StructureConfig})[structureID]
+function CastleServerService.GetStructureConfig(structureID: string): CastleRenderSharedService.StructureConfig?
+    return (CastleRenderSharedService.STRUCTURE_CONFIG_DATA:: {[string]: CastleRenderSharedService.StructureConfig})[structureID]
 end
 
 function CastleServerService.IsStructureUnlockable(
@@ -215,19 +215,17 @@ function CastleServerService.UnlockStructure(
 
         -- set purchaseable to new progression structures
         for _, structureID in purchaseableStructures do
-            warn(`LOOPING THRU {structureID}`)
             local purchaseableStructureData = playerData.castle.structureData[structureID]
             if not purchaseableStructures then
                 continue
             end
 
-            warn(purchaseableStructureData)
             purchaseableStructureData[1] = true
         end
     end
 
-    for floorName in CastleSharedService.FLOOR_NAMES:: {[string]: string} do
-        local floorStructures = CastleSharedService.FLOOR_END_STRUCTURES[floorName]; do
+    for floorName in CastleRenderSharedService.FLOOR_NAMES:: {[string]: string} do
+        local floorStructures = CastleRenderSharedService.FLOOR_END_STRUCTURES[floorName]; do
             assert(floorStructures, `Failed to acknowledge any structures from {floorName}`)
         end
         local endStructure = floorStructures["end"]
@@ -237,7 +235,6 @@ function CastleServerService.UnlockStructure(
             endStructure == structureID
             and not isFloorUnlocked
         then
-            warn(`UNLOCKED {floorName}`)
             playerData.castle.floorUnlocked[floorName] = true
         end
     end

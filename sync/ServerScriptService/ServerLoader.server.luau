@@ -8,7 +8,8 @@ LoaderUtil.scope(function()
 	do
 		-- shared
 		LoaderUtil.Boot(ReplicatedStorage.SharedServices.DataSharedService)
-		LoaderUtil.Boot(ReplicatedStorage.SharedServices.CastleSharedService)
+		LoaderUtil.Boot(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
+		LoaderUtil.Boot(ReplicatedStorage.SharedServices.CastleServices.CastleReplicationSharedService)
 		LoaderUtil.Boot(ReplicatedStorage.SharedServices.MapSharedService)
 		LoaderUtil.Boot(ReplicatedStorage.SharedServices.NPCSharedService)
 

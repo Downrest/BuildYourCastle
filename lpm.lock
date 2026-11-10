@@ -64,13 +64,13 @@ type = "zip"
 url = "https://api.wally.run/v1/package-contents/downrest/typedattribute/1.1.4"
 
 [[package]]
-name = "downrest/typedevent"
-version = "1.0.4"
+name = "downrest/typedremote"
+version = "1.0.0"
 environment = "roblox"
-link = "TypedEvent"
+link = "TypedRemote"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
-url = "https://api.wally.run/v1/package-contents/downrest/typedevent/1.0.4"
+url = "https://api.wally.run/v1/package-contents/downrest/typedremote/1.0.0"
 
 [[package]]
 name = "evaera/promise"
@@ -79,6 +79,23 @@ environment = "roblox"
 index = "https://github.com/UpliftGames/wally-index"
 type = "zip"
 url = "https://api.wally.run/v1/package-contents/evaera/promise/4.0.0"
+
+[[package]]
+name = "howmanysmall/janitor"
+version = "1.18.3"
+environment = "roblox"
+link = "Janitor"
+index = "https://github.com/UpliftGames/wally-index"
+type = "zip"
+url = "https://api.wally.run/v1/package-contents/howmanysmall/janitor/1.18.3"
+
+[[package]]
+name = "howmanysmall/typed-promise"
+version = "4.0.6"
+environment = "roblox"
+index = "https://github.com/UpliftGames/wally-index"
+type = "zip"
+url = "https://api.wally.run/v1/package-contents/howmanysmall/typed-promise/4.0.6"
 
 [[package]]
 name = "nezuo/delta-compress"
@@ -132,3 +149,12 @@ url = "https://api.wally.run/v1/package-contents/paradoxum-games/lyra/0.6.0"
 [package.patch]
 path = "patches/paradoxum-games_lyra@0.6.0.patch"
 hash = "d519887e08a76e3d"
+
+[[package]]
+name = "pepeeltoro41/ui-labs"
+version = "2.4.2"
+environment = "roblox"
+link = "UILabs"
+index = "https://github.com/UpliftGames/wally-index"
+type = "zip"
+url = "https://api.wally.run/v1/package-contents/pepeeltoro41/ui-labs/2.4.2"

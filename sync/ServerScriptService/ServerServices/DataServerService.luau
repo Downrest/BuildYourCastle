@@ -67,6 +67,8 @@ local function replicatePlayerState(
 	-- fyi, ...Set() automatically rejects redundant mutations
 	local stateReplica = playerStreams[player]
 
+	stateReplica.gameFirstlyIntroduced:Set(newData.gameFirstlyIntroduced)
+
 	stateReplica.currency.gold:Set(newData.currency.gold)
 
 	stateReplica.castle.floorUnlocked.floor1:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor1])

@@ -18,6 +18,7 @@ Vide = { name = "centau/vide", version = "^", index = "wally" }
 DeltaCompress = { name = "nezuo/delta-compress", version = "^", index = "wally" }
 Replicator = { name = "downrest/replicator", version = "^", index = "wally" }
 Janitor = { name = "howmanysmall/janitor", version = "^", index = "wally" }
+UILabs = { name = "pepeeltoro41/ui-labs", version = "^", index = "wally" }
 
 [patches]
 "osyrisrblx/t@3.1.1" = "patches/osyrisrblx_t@3.1.1.patch"

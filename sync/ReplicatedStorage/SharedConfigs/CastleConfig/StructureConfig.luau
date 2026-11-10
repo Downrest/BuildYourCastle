@@ -1,10 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedService)
+
 local StructureConfig = {}
 
-local sharedAssets = ReplicatedStorage.SharedAssets
-local castleAssets = sharedAssets.Castle
-local castleProgressions = castleAssets.Progression
+local castleProgressions = AssetSharedService.CastleAssets.Progression
 local firstFloorProgressions = castleProgressions["1stFloor"];
 local secondFloorProgressions = castleProgressions["2ndFloor"];
 
@@ -136,7 +136,6 @@ StructureConfig.STRUCTURE_NAMES = {
     Doorway4 = "Doorway4";
     CastleTower4 = "CastleTower4";
 }
-
 StructureConfig.STRUCTURE_NAME_TO_ASSET = {
     -- 1ST FLOOR
     [StructureConfig.STRUCTURE_NAMES.Pathway1] = firstFloorProgressions["1. Pathway (10)"];

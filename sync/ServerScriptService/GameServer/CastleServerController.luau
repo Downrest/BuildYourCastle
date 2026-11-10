@@ -1,7 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
+local CastleReplicationSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleReplicationSharedService)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
 local TransactionServerService = require(ServerScriptService.ServerServices.TransactionServerService)
 local ReplicationController = require(script.ReplicationController)
@@ -14,8 +15,8 @@ function CastleServerController.Init()
         CastleServerService.Init()
     end
 
-    CastleSharedService.RequestTotalReplicationPackets.server.OnServerInvoke = function(player: Player)
-        local batchedReplicationData = {}:: {CastleSharedService.CastleReplication}
+    CastleReplicationSharedService.RequestTotalReplicationPackets.server.OnServerInvoke = function(player: Player)
+        local batchedReplicationData = {}:: {CastleReplicationSharedService.CastleReplication}
 
         for _, castleCache in CastleServerService.GetCastleCacheList() do
             local castleID = castleCache.castleID
@@ -32,7 +33,7 @@ function CastleServerController.Init()
             )
         end
 
-        return CastleSharedService.SerializeReplicationPacket(
+        return CastleReplicationSharedService.SerializeReplicationPacket(
             batchedReplicationData
         )
     end
@@ -103,7 +104,7 @@ function CastleServerController.Init()
     end)
 
     -- handle structure purchases
-    CastleSharedService.ClientTouchedStructurePurchase.server.OnServerEvent:Connect(function(
+    CastleRenderSharedService.ClientTouchedStructurePurchase.server.OnServerEvent:Connect(function(
         player,
         structureID
     )
@@ -113,7 +114,7 @@ function CastleServerController.Init()
         )
 
         -- return purchase status
-        CastleSharedService.ServerPurchaseStatus.server:FireClient(player, purchaseSuccess)
+        CastleRenderSharedService.ServerPurchaseStatus.server:FireClient(player, purchaseSuccess)
     end)
 end
 

@@ -8,3 +8,5 @@ sync/Workspace/
 packages/
 .lpm-patch/
 AGENTS.md
+agent-docs
+.agents

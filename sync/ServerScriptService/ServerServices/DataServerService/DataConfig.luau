@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local t = require(ReplicatedStorage.SharedPackages.t)
-local CastleSharedService = require(ReplicatedStorage.SharedServices.CastleSharedService)
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
 
 local DataConfig = {}
 
@@ -30,21 +30,23 @@ export type CastleData = {
 }
 
 export type PlayerData = {
+	gameFirstlyIntroduced: boolean;
     currency: CurrencyData;
     castle: CastleData;
 }
 
 DataConfig.STARTING_PLAYER_GOLD = 16_000
-DataConfig.FLOOR_NAMES = CastleSharedService.FLOOR_NAMES
-DataConfig.STRUCTURE_NAMES = CastleSharedService.STRUCTURE_NAMES
+DataConfig.FLOOR_NAMES = CastleRenderSharedService.FLOOR_NAMES
+DataConfig.STRUCTURE_NAMES = CastleRenderSharedService.STRUCTURE_NAMES
 
 DataConfig.DATA_TEMPLATE = {
+	gameFirstlyIntroduced = true;
 	currency = {
 		gold = DataConfig.STARTING_PLAYER_GOLD;
 	};
 	castle = {
 		popularity = 0;
-		tutorialFinished = true; --TODO: should be false, but true for testing
+		tutorialFinished = true;
 		floorUnlocked = {
 			[DataConfig.FLOOR_NAMES.Floor1] = false;
 			[DataConfig.FLOOR_NAMES.Floor2] = false;
@@ -175,6 +177,7 @@ DataConfig.DATA_TEMPLATE = {
 	};
 }
 DataConfig.DATA_SCHEMA = t.strictInterface({
+	gameFirstlyIntroduced = t.boolean;
 	currency = t.strictInterface({
 		gold = t.number;
 	});

@@ -5,6 +5,7 @@ local Replicator = require(ReplicatedStorage.SharedPackages.Replicator)
 local DataSharedService = {}
 
 export type PlayerState = Replicator.Replica<{
+	gameFirstlyIntroduced: boolean;
 	currency: {
 		gold: number;
 	};
@@ -22,6 +23,7 @@ export type PlayerState = Replicator.Replica<{
 DataSharedService.PlayerStream = Replicator.stream(
 	"PlayerStream", 
 	{
+		gameFirstlyIntroduced = false;
 		currency = {
 			gold = 0;
 		};
