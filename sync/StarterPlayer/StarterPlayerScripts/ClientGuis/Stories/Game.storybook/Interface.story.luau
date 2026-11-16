@@ -8,12 +8,19 @@ local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
 return UILabs.CreateVideStory({
     controls = {
-        IsVisible = UILabs.Boolean(true);
+        IsVisible = true;
+
+        CurrentGold = 0;
+        PreviousGold = 0;
     };
     vide = Vide;
 }, function(props)
     return InterfaceGui({
+
         IsVisible = props.controls.IsVisible;
+        CurrentGold = props.controls.CurrentGold;
+        PreviousGold = props.controls.PreviousGold;
+
         BuildPressed = Signal.new();
         CastlePressed = Signal.new();
         ShopPressed = Signal.new();

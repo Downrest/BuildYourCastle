@@ -31,11 +31,12 @@ local playerStore = Lyra.createPlayerStore<<PlayerData>>({
 				assert(player, `Failed to translate {userId} into player?`)
 			end
 
-			if not table.find(playersDataLoaded, player) then
-				return
+			warn(`{player} WENT FROM`, oldData, `TO`, newData)
+			if newData then
+				DataServerService.PlayerDataObserved:Fire(player, newData, oldData)
+			else
+				DataServerService.PlayerDataReleased:Fire(player)
 			end
-
-			DataServerService.PlayerDataObserved:Fire(player, newData, oldData)
 		end;
 	};
 
@@ -64,19 +65,32 @@ local function replicatePlayerState(
 	player: Player,
 	newData: PlayerData
 )
+	local currencyData = newData.currency
+	local castleData = newData.castle
+
 	-- fyi, ...Set() automatically rejects redundant mutations
 	local stateReplica = playerStreams[player]
+	local currencyReplica = stateReplica.currency
+	local castleReplica = stateReplica.castle
 
 	stateReplica.gameFirstlyIntroduced:Set(newData.gameFirstlyIntroduced)
 
-	stateReplica.currency.gold:Set(newData.currency.gold)
+	-- currency
+	do
+		currencyReplica.gold:Set(currencyData.gold)
+	end
 
-	stateReplica.castle.floorUnlocked.floor1:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor1])
-	stateReplica.castle.floorUnlocked.floor2:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor2])
-	stateReplica.castle.floorUnlocked.floor3:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor3])
-	stateReplica.castle.floorUnlocked.floor4:Set(newData.castle.floorUnlocked[DataConfig.FLOOR_NAMES.Floor4])
+	-- castle
+	do
+		castleReplica.id:Set(castleData.id)
 
-	stateReplica.castle.tutorialFinished:Set(newData.castle.tutorialFinished)
+		castleReplica.floorUnlocked.floor1:Set(castleData.floorUnlocked[DataConfig.FLOOR_NAMES.Floor1])
+		castleReplica.floorUnlocked.floor2:Set(castleData.floorUnlocked[DataConfig.FLOOR_NAMES.Floor2])
+		castleReplica.floorUnlocked.floor3:Set(castleData.floorUnlocked[DataConfig.FLOOR_NAMES.Floor3])
+		castleReplica.floorUnlocked.floor4:Set(castleData.floorUnlocked[DataConfig.FLOOR_NAMES.Floor4])
+
+		castleReplica.tutorialFinished:Set(castleData.tutorialFinished)
+	end
 end
 
 local function onPlayerAdded(callback: (player: Player) -> ())
@@ -112,10 +126,6 @@ function DataServerService.Init()
 		-- load server playerstate
 		do
 			playerStore:loadAsync(player); do
-				local loadedData = DataServerService.GetPlayerDataAsync(player)
-
-				DataServerService.PlayerDataObserved:Fire(player, loadedData)
-				replicatePlayerState(player, loadedData)
 				table.insert(playersDataLoaded, player)
 			end
 		end
@@ -127,7 +137,6 @@ function DataServerService.Init()
 		-- unload + save server playerstate
 		do
 			playerStore:unloadAsync(player); do
-				DataServerService.PlayerDataReleased:Fire(player)
 				table.remove(playersDataLoaded, table.find(playersDataLoaded, player))
 			end
 		end

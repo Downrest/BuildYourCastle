@@ -8,12 +8,13 @@ local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
 return UILabs.CreateVideStory({
     controls = {
-        IsVisible = UILabs.Boolean(true);
+        IsVisible = true;
     };
     vide = Vide;
 }, function(props)
     return BuildGui({
         IsVisible = props.controls.IsVisible;
+
         CurrentMode = Vide.source("");
         CurrentCategory = Vide.source("");
         CurrentBuildSelection = Vide.source("");

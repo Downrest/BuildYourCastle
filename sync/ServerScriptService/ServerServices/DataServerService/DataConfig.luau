@@ -10,22 +10,14 @@ export type CurrencyData = {
 }
 
 export type CastleStructureData = {
-    --[[
-        [structureID -> string]
-    ]]
-    [string]: 
-    --[[
-        {isPurchaseable -> boolean, isUnlocked -> boolean}
-    ]]
-        {boolean};
+    --  [structureID -> string]
+    [string]: {boolean}; -- {isPurchaseable -> boolean, isUnlocked -> boolean}
 }
 export type CastleData = {
+	id: number;
     popularity: number;
 	tutorialFinished: boolean;
 	floorUnlocked: {[string]: boolean};
-    --[[
-        [structureID -> string]: {isPurchaseable -> boolean, isUnlocked -> boolean}
-    ]]
     structureData: CastleStructureData;
 }
 
@@ -45,6 +37,7 @@ DataConfig.DATA_TEMPLATE = {
 		gold = DataConfig.STARTING_PLAYER_GOLD;
 	};
 	castle = {
+		id = 0;
 		popularity = 0;
 		tutorialFinished = true;
 		floorUnlocked = {
@@ -182,6 +175,7 @@ DataConfig.DATA_SCHEMA = t.strictInterface({
 		gold = t.number;
 	});
 	castle = t.strictInterface({
+		id = t.number;
 		popularity = t.number;
 		tutorialFinished = t.boolean;
 		floorUnlocked = t.map(

@@ -190,6 +190,11 @@ return function(
             end
         end
 
+        local function dismount()
+            props.CurrentBuildSelection("") -- reset selection on close
+            props.ExitPressed:Fire()
+        end
+
         -- category buttons
         createCategoryButtons(function(
             button,
@@ -238,9 +243,7 @@ return function(
             bin:Add(closeButton.MouseLeave:Connect(function()
                 MENU_CLOSE_TWEENS.defocus:Play()
             end))
-            bin:Add(closeButton.Activated:Connect(function()
-                props.ExitPressed:Fire()
-            end))
+            bin:Add(closeButton.Activated:Connect(dismount))
 
             -- reset
             bin:Add(function()

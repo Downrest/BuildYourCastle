@@ -1,0 +1,48 @@
+{
+  "customFolder": "Day Planners",
+  "debug": false,
+  "mode": "File",
+  "mermaid": false,
+  "completePastItems": false,
+  "circularProgress": true,
+  "nowAndNextInStatusBar": true,
+  "showTaskNotification": true,
+  "timelineZoomLevel": 4,
+  "timelineIcon": "calendar-with-checkmark",
+  "plannerLabel": "Day Planner",
+  "breakLabel": "BREAK",
+  "endLabel": "END",
+  "markCurrent": false,
+  "correctLabels": true,
+  "preserveValues": "-",
+  "hideTimelineValues": "",
+  "timelineColors": {
+    "light": {
+      "lineColor": "#CAD5CA",
+      "nowLineColor": "#8b0000",
+      "nowLineTextColor": "#ffffff",
+      "timelineColorBegin": "#008183",
+      "timelineColorEnd": "#4d194d",
+      "timelineHoverColorBegin": "#83003f",
+      "timelineHoverColorEnd": "#5d0e2e",
+      "timelineTextColor": "#ffffff"
+    },
+    "dark": {
+      "lineColor": "#CAD5CA",
+      "nowLineColor": "#8b0000",
+      "nowLineTextColor": "#ffffff",
+      "timelineColorBegin": "#008183",
+      "timelineColorEnd": "#4d194d",
+      "timelineHoverColorBegin": "#83003f",
+      "timelineHoverColorEnd": "#5d0e2e",
+      "timelineTextColor": "#ffffff"
+    }
+  },
+  "autoResumeScroll": true,
+  "autoResumeScrollDelay": 3000,
+  "newDayStartsAt": 0,
+  "activePlan": {
+    "notePath": "Day Planners/Day Planner-20261114.md",
+    "anchorDate": 1794585600000
+  }
+}

@@ -6,13 +6,11 @@ local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
 local CurrencyClientService = {}
 
-CurrencyClientService.CurrentGold = Vide.source(0)
-CurrencyClientService.PreviousGold = Vide.source(0)
+CurrencyClientService.Gold = Vide.source(0)
 
 function CurrencyClientService.Init()
-    DataClientService.PlayerState.currency.gold.Observed(function(new, old)
-        CurrencyClientService.PreviousGold(old or new)
-        CurrencyClientService.CurrentGold(new)
+    DataClientService.PlayerState.currency.gold.Observed(function(new)
+        CurrencyClientService.Gold(new)
     end)
 end
 

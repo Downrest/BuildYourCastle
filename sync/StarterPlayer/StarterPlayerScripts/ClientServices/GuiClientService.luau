@@ -4,6 +4,7 @@ local LocalPlayerUtil = require(StarterPlayer.StarterPlayerScripts.ClientUtils.L
 
 local GuiService = {}
 
-GuiService.GUI = LocalPlayerUtil.playerGui.Gui
+GuiService.PLAYER_GUI = LocalPlayerUtil.playerGui
+GuiService.GUI_ROOT = GuiService.PLAYER_GUI.Gui --TODO: ClientAssets/Gui.. change that to GuiAssets
 
 return GuiService

@@ -20,7 +20,7 @@ CastleReplicationSharedService.RequestTotalReplicationPackets =
 CastleReplicationSharedService.ReplicationPacket =
     TypedRemote.newReliableEvent("ReplicationPacket"):: TypedRemote.ToClientEvent<(replicationBuffer: buffer) -> ()>
 
-local castleReplicationSerde = Squash.record({
+local CASTLE_REPLICATION_SERDE = Squash.record({
     castleID = Squash.T(Squash.i8());
     isDestructive = Squash.T(Squash.literal(true, false));
     unlockedStructures = Squash.T(
@@ -31,12 +31,12 @@ local castleReplicationSerde = Squash.record({
         )
     );
 })
-local batchCastleReplicationSerde = Squash.array(castleReplicationSerde);
+local BATCH_CASTLE_REPLICATION_SERDE = Squash.array(CASTLE_REPLICATION_SERDE);
 
 function CastleReplicationSharedService.SerializeReplicationPacket(batchCastleReplication: BatchedCastleReplication): buffer
     local cursor = Squash.cursor()
 
-    batchCastleReplicationSerde.ser(cursor, batchCastleReplication)
+    BATCH_CASTLE_REPLICATION_SERDE.ser(cursor, batchCastleReplication)
 
     return Squash.tobuffer(cursor)
 end
@@ -44,7 +44,7 @@ end
 function CastleReplicationSharedService.DeserializeReplicationPacket(replicationBuffer: buffer): BatchedCastleReplication
     local cursor = Squash.frombuffer(replicationBuffer)
 
-    return batchCastleReplicationSerde.des(cursor)
+    return BATCH_CASTLE_REPLICATION_SERDE.des(cursor)
 end
 
 return CastleReplicationSharedService

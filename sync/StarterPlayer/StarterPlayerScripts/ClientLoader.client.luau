@@ -19,7 +19,6 @@ Vide.root(function()
 			-- client
 			LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.GuiServices.InterfaceGuiService)
 			LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.GuiServices.BuildGuiService)
-			LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.GuiServices.GuiService)
 			--LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.DataClientService)
 			--LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.BuildGuiService)
 			--LoaderUtil.Boot(StarterPlayer.StarterPlayerScripts.ClientServices.CastleClientService)

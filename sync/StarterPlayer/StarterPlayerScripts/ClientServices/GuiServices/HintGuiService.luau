@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedService)
 local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
 local HintGuiService = {}
@@ -14,7 +15,7 @@ HintGuiService.HINTS = {
     FirstFloorReached = "FirstFloorReached";
 }
 
-HintGuiService.HINT_GUI = ReplicatedStorage.ClientAssets.Gui.Hint
+HintGuiService.HINT_GUI = AssetSharedService.CLIENT_GUI_ASSETS.Hint
 
 HintGuiService.CurrentHint = Vide.source("")
 

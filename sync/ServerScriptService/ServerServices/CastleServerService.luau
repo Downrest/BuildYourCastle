@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local CastleConfig = require(ReplicatedStorage.SharedConfigs.CastleConfig.CastleConfig)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
@@ -41,56 +42,51 @@ CastleServerService.CastleCacheList = {}:: {CastleCache}
 
 local playerToCastleCache = {}:: {[Player]: CastleCache}
 
-local MAX_CASTLES = 4
-
-local function getVacantCastleCache(): CastleCache?
-    local currentIndex = 1
-    local castleCache = CastleServerService.CastleCacheList[currentIndex]; do
+local function getVacantCastleCache(): (CastleCache?, number?)
+    local currentID = 1
+    local castleCache = CastleServerService.CastleCacheList[currentID]; do
         while castleCache and castleCache.owner ~= nil do
-            currentIndex += 1
-            castleCache = CastleServerService.CastleCacheList[currentIndex]
+            currentID += 1
+            castleCache = CastleServerService.CastleCacheList[currentID]
         end
     end
 
-    return castleCache
+    if castleCache then
+        return castleCache, currentID
+    end
+    return nil, nil
 end
 
-local function pushPlayerIntoVacantCastle(player: Player, data: DataServerService.PlayerData): CastleCache<Player, CastleData>
-    local vacantCastleCache = getVacantCastleCache(); do
-        assert(vacantCastleCache, `No more vacant castles for {player}?`)
+local function pushPlayerIntoVacantCastle(player: Player): CastleCache<Player, CastleData>
+    local vacantCastleCache, vacantID = getVacantCastleCache(); do
+        assert(vacantCastleCache and vacantID, `No more vacant castles for {player}?`)
     end
-    assert(data, `Attempted to push {player} into vacant castle without player data!`)
+    local data: DataServerService.PlayerData
 
-    vacantCastleCache.owner = player
-    vacantCastleCache.castleData = data.castle
+    -- data mutation
+    do
+        DataServerService.SetPlayerDataAsync(player, function(data)
+            -- local to the player
+            data.castle.id = vacantID 
 
-    playerToCastleCache[player] = vacantCastleCache
+            return true
+        end)
+        data = DataServerService.GetPlayerDataAsync(player); do
+            assert(data, `Failed to get {player}'s data during vacant castle initialization!`)
+        end
+    end
+    
+    -- castle caching
+    do
+        vacantCastleCache.owner = player
+        vacantCastleCache.castleID = data.castle.id
+        vacantCastleCache.castleData = data.castle
+
+        playerToCastleCache[player] = vacantCastleCache
+    end
 
     return vacantCastleCache:: CastleCache<Player, CastleData>
 end
-
--- local function updatePlayerCastleCache(player: Player, data: DataServerService.PlayerData): (CastleCache<Player, CastleData>, CastleCache<Player, CastleData>)
---     local playerCastleCache = playerToCastleCache[player]; do
---         assert(playerCastleCache, `No castle cache for {player}?`)
---     end
-
--- 	local previousCastleCache: CastleCache = TableUtil.DeepCopy(
--- 		playerCastleCache
--- 	)
--- 	local newCastleCache: CastleCache = TableUtil.DeepCopy(
--- 		playerCastleCache
--- 	)
-
---     -- avoid redundant writes
---     if playerCastleCache.castleData ~= data.castle then
---         playerCastleCache.castleData = data.castle
---         newCastleCache = playerCastleCache
---     end
-
---     return 
---         newCastleCache:: CastleCache<Player, CastleData>,
---         previousCastleCache:: CastleCache<Player, CastleData>
--- end
 
 local function cleanupPlayerCastle(player: Player): number
     local playerCastleCache = playerToCastleCache[player]; do
@@ -108,7 +104,7 @@ end
 function CastleServerService.Init()
     -- initializing castle cache
     do
-        for castleID = 1, MAX_CASTLES do
+        for castleID = 1, CastleConfig.MAX_CASTLES do
             table.insert(
                 CastleServerService.CastleCacheList,
                 {
@@ -120,32 +116,37 @@ function CastleServerService.Init()
         end
     end
 
-    -- castle cache lifecycles + data updates
+    -- castle cache lifecycles
     do
         DataServerService.PlayerDataObserved:Connect(function(player, data)
-            if playerToCastleCache[player] then
-                local playerCastleCache = playerToCastleCache[player]:: CastleCache<Player, CastleData>; do
-                    assert(playerCastleCache, `No castle cache for {player}?`)
+            local playerCastleCache = playerToCastleCache[player]:: CastleCache<Player, CastleData>
+
+            if playerCastleCache then
+                -- PlayerCastleChanged
+
+                if playerCastleCache.castleData == data.castle then
+                    return
                 end
 
-                local previousCastleCache = TableUtil.DeepCopy(playerCastleCache)
-                local newCastleCache: CastleCache<Player, CastleData>
-            
-                -- avoid redundant writes
-                if playerCastleCache.castleData ~= data.castle then
+                local previousCastleData: CastleData = TableUtil.DeepCopy(playerCastleCache.castleData)
+
+                -- mutation
+                do
                     playerCastleCache.castleData = data.castle
-                    newCastleCache = playerCastleCache
-
-                    CastleServerService.PlayerCastleChanged:Fire(
-                        player, 
-                        newCastleCache.castleID, 
-                        newCastleCache.castleData.structureData,
-                        previousCastleCache.castleData.structureData
-                    )
                 end
+                
+                CastleServerService.PlayerCastleChanged:Fire(
+                    player,
+                    playerCastleCache.castleID, 
+                    playerCastleCache.castleData.structureData,
+                    previousCastleData.structureData
+                )
             else
-                local castleCache = pushPlayerIntoVacantCastle(player, data)
-            
+                -- PlayerCastleInitialized
+
+                -- mutates player data, hence why we dont pass our current copy
+                local castleCache = pushPlayerIntoVacantCastle(player)
+
                 CastleServerService.PlayerCastleInitialized:Fire(
                     player, 
                     castleCache.castleID, 
@@ -167,10 +168,6 @@ end
 
 function CastleServerService.GetCastleCacheList(): {CastleCache}
     return CastleServerService.CastleCacheList
-end
-
-function CastleServerService.GetStructureConfig(structureID: string): CastleRenderSharedService.StructureConfig?
-    return (CastleRenderSharedService.STRUCTURE_CONFIG_DATA:: {[string]: CastleRenderSharedService.StructureConfig})[structureID]
 end
 
 function CastleServerService.IsStructureUnlockable(
@@ -203,7 +200,7 @@ function CastleServerService.UnlockStructure(
     local unlockedStructureData = playerData.castle.structureData[structureID]; do
         assert(unlockedStructureData, `Structure ID {structureID} not found in structure data?`)
     end
-    local structureConfig = CastleServerService.GetStructureConfig(structureID); do
+    local structureConfig = CastleRenderSharedService.GetStructureConfig(structureID); do
         assert(structureConfig, `Structure ID {structureID} without valid config?`)
     end
     local purchaseableStructures = structureConfig.purchaseable

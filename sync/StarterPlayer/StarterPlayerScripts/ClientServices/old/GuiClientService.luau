@@ -1,8 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedService)
 local GuiClientService = {}
 
-local guiAssets = ReplicatedStorage.ClientAssets.Gui
+local guiAssets = AssetSharedService.CLIENT_GUI_ASSETS
 
 GuiClientService.BuildMode = guiAssets.BuildMode
 GuiClientService.Index = guiAssets.Index

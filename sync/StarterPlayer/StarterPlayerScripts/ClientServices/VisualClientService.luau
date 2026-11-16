@@ -12,7 +12,7 @@ export type VisualData = {
 
 type VisualModel =  Model
 
-VisualClientService.VISUAL_FOLDER = workspace.Visual
+VisualClientService.VISUAL_FOLDER = workspace.Client.Visuals
 
 local VISUAL_TRANSPARENCY = .25
 local VISUAL_CAN_COLLIDE = false

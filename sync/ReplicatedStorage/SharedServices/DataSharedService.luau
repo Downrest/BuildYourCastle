@@ -10,6 +10,7 @@ export type PlayerState = Replicator.Replica<{
 		gold: number;
 	};
 	castle: {
+		id: number;
 		tutorialFinished: boolean;
 		floorUnlocked: {
 			floor1: boolean;
@@ -28,6 +29,7 @@ DataSharedService.PlayerStream = Replicator.stream(
 			gold = 0;
 		};
 		castle = {
+			id = 0;
 			tutorialFinished = false;
 			floorUnlocked = {
 				floor1 = false;

@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local CastleRenderSharedService = require(ReplicatedStorage.SharedServices.CastleServices.CastleRenderSharedService)
 local CastleServerService = require(ServerScriptService.ServerServices.CastleServerService)
 local CurrencyServerService = require(ServerScriptService.ServerServices.CurrencyServerService)
 local DataServerService = require(ServerScriptService.ServerServices.DataServerService)
@@ -16,7 +18,7 @@ end
 
 function TransactionServerService.PurchaseCastleStructure(player: Player, structureID: string): boolean
     return DataServerService.SetPlayerDataAsync(player, function(data)
-        local structureConfig = CastleServerService.GetStructureConfig(structureID); do
+        local structureConfig = CastleRenderSharedService.GetStructureConfig(structureID); do
             assert(structureConfig, `Structure ID {structureID} has no structure config?`)
         end
         local structureCost = structureConfig.cost.gold

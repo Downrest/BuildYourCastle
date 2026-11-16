@@ -18,8 +18,8 @@ BuildConfig.BUILD_NAMES = {
 }
 BuildConfig.BUILD_TO_ASSET = {
     -- decor
-    [BuildConfig.BUILD_NAMES.GoldLionStatue] = AssetSharedService.BuildAssets["Gold Lion Statue"];
-    [BuildConfig.BUILD_NAMES.MarbleLionStatue] = AssetSharedService.BuildAssets["Marble Lion Statue"];
+    [BuildConfig.BUILD_NAMES.GoldLionStatue] = AssetSharedService.BUILD_ASSETS["Gold Lion Statue"];
+    [BuildConfig.BUILD_NAMES.MarbleLionStatue] = AssetSharedService.BUILD_ASSETS["Marble Lion Statue"];
 }
 BuildConfig.BUILD_TO_LIST_ORDER = {
     -- decor

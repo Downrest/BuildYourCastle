@@ -4,7 +4,7 @@ local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedS
 
 local StructureConfig = {}
 
-local castleProgressions = AssetSharedService.CastleAssets.Progression
+local castleProgressions = AssetSharedService.CASTLE_ASSETS.Progression
 local firstFloorProgressions = castleProgressions["1stFloor"];
 local secondFloorProgressions = castleProgressions["2ndFloor"];
 

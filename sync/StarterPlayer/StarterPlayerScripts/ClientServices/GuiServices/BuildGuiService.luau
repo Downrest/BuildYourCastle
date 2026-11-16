@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedService)
 local Signal = require(ReplicatedStorage.SharedPackages.Signal)
 local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 
@@ -15,13 +16,13 @@ export type BuildProps = {
     ExitPressed: Signal.Signal;
 }
 
-BuildGuiService.BUTTON_SELECTIONS = {
+BuildGuiService.BUTTON_SELECTIONS = { --TODO: change this to BUILD_MODES
     Select = "Select";
     Move = "Move";
     Rotate = "Rotate";
     Delete = "Delete";
 }
-BuildGuiService.BUILD_GUI = ReplicatedStorage.ClientAssets.Gui.Build
+BuildGuiService.BUILD_GUI = AssetSharedService.CLIENT_GUI_ASSETS.Build
 
 BuildGuiService.IsVisible = Vide.source(false)
 BuildGuiService.CurrentMode = Vide.source("")
