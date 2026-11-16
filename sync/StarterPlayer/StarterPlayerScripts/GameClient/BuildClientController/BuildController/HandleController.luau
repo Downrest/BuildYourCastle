@@ -49,8 +49,6 @@ local function stepHandle(
 
     -- handle adornments
     do
-        -- local originSize = handleModel.Origin.Size -- we're just relying on the transformed part prop itself
-        -- local handleRadius = VectorUtil.Average3(originSize.X, originSize.Y, originSize.Z)/2
         local handleRadius = HANDLE_RADIUS * toTargetDistanceRatio
 
         for _, adornmentData in handleData.handleAdornmentDefaults do
