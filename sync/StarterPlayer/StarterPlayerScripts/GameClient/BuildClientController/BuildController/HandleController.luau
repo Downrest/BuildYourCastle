@@ -33,6 +33,7 @@ local function stepHandle(
 
     local toTargetDirection = (buildModelPosition - cameraPosition).Unit
     local initialHandleCFrame = CFrame.new(cameraPosition) + (toTargetDirection * FORWARD_OFFSET)
+    -- we normalize w/ cameraPosition
     local toTargetDistanceRatio = (
         (initialHandleCFrame.Position - cameraPosition).Magnitude
         / (buildModelPosition - cameraPosition).Magnitude
