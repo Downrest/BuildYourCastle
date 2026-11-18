@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StateMachineUtil = require(ReplicatedStorage.SharedUtils.StateMachineUtil)
 local StarterPlayer = game:GetService("StarterPlayer")
 
-local Vide = require(ReplicatedStorage.SharedPackages.Vide)
 local BuildConfig = require(StarterPlayer.StarterPlayerScripts.ClientConfigs.BuildConfig)
 local BuildClientService = require(StarterPlayer.StarterPlayerScripts.ClientServices.BuildClientService)
 local AssetSharedService = require(ReplicatedStorage.SharedServices.AssetSharedService)
@@ -66,7 +65,6 @@ local HANDLES = {
         handleAdornment = backSphereAdornment;
     };
 }
-local HANDLE_ARCS = { upDownArc, leftRightArc, frontBackArc }
 local HANDLE_OFFSETS = {
     [BuildClientService.HANDLE_DIRECTIONS.Up] = function(boundingHalfSize: Vector3): CFrame
         return CFrame.new(0, (boundingHalfSize.Y), 0)
@@ -87,8 +85,6 @@ local HANDLE_OFFSETS = {
         return CFrame.new(-(boundingHalfSize.X), 0, 0)
     end;
 }:: {[string]: (Vector3) -> CFrame}
-
-local ARC_RADIUS_SPACING = .1
 
 local HANDLE_DATA = {
     handleModel = rotateHandleAsset;
@@ -136,17 +132,18 @@ local HANDLE_DATA = {
 local previousBuildCFrame: CFrame
 
 local function initRotateHandles(buildData: BuildClientService.BuildData?)
-    local rotateHandleParent: Instance, rotateHandleCFrame: CFrame
+    local rotateHandleCFrame: CFrame
 
     if buildData then
         local buildModel = buildData.model
         local buildCFrame = buildModel:GetPivot()
 
-        local boundingMagnitude, boundingHalfSize; do
+        -- fyi this math relies on handle model being GetScale() == 1
+        local boundingHalfSize; do
             local buildHalfSize = buildData.modelSize
+            local boundingHalfMagnitude = math.max(buildHalfSize.X, buildHalfSize.Y, buildHalfSize.Z) + BuildClientService.HANDLE_OFFSET
 
-            boundingMagnitude = math.max(buildHalfSize.X, buildHalfSize.Y, buildHalfSize.Z) + BuildClientService.HANDLE_OFFSET
-            boundingHalfSize = Vector3.one * (boundingMagnitude)
+            boundingHalfSize = Vector3.one * boundingHalfMagnitude
         end
 
         -- handles + arcs
@@ -156,20 +153,13 @@ local function initRotateHandles(buildData: BuildClientService.BuildData?)
 
                 handleData.motor.C0 = handleOffset(boundingHalfSize)
             end
-            for _, handleArc in HANDLE_ARCS do
-                handleArc.InnerRadius = boundingMagnitude
-                handleArc.Radius = boundingMagnitude + ARC_RADIUS_SPACING
-            end
         end
 
-        rotateHandleParent = buildModel
         rotateHandleCFrame = buildCFrame
     else
-        rotateHandleParent = BuildConfig.HANDLE_FOLDER
         rotateHandleCFrame = BuildClientService.HANDLE_UNRENDER_CFRAME
     end
 
-    rotateHandleAsset.Parent = rotateHandleParent
     rotateHandleAsset:PivotTo(rotateHandleCFrame)
 end
 
@@ -193,7 +183,9 @@ return StateMachineUtil.state({
                 previousBuildCFrame = currentBuildModel:GetPivot()
             end))
             bin:Add(dragDetector.DragContinue:Connect(function()
-                local x, y, z = dragDetector.DragFrame:ToEulerAnglesXYZ()
+                local _, y, z = dragDetector.DragFrame:ToEulerAnglesYXZ()
+                local x = dragDetector.DragFrame:ToEulerAnglesXYZ()
+
                 local cframeAngles: CFrame
 
                 if table.find(BuildClientService.HANDLE_DIRECTION_GROUPS.UpDown, direction) then
@@ -204,7 +196,6 @@ return StateMachineUtil.state({
                     cframeAngles = CFrame.Angles(0, y, 0)
                 end
 
-                -- TODO: change CFrame.new(currentBuildModel:GetPivot().Position)
                 currentBuildModel:PivotTo(
                     previousBuildCFrame * cframeAngles
                 )

@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 
 local Vide = require(ReplicatedStorage.SharedPackages.Vide)
@@ -34,7 +33,15 @@ function ModeController.Init()
             return
         end
 
-        stateMachine:SetState(state)
+        if BuildGuiService.IsVisible() then
+            if BuildClientService.CurrentBuildData() == BuildClientService.NIL_BUILD_DATA then
+                return
+            end
+    
+            stateMachine:SetState(state)
+        else
+            stateMachine:SetState(nil)
+        end
     end)
 end
 

@@ -4,7 +4,7 @@ local Janitor = require(ReplicatedStorage.SharedPackages.Janitor)
 local StateMachineUtil = {}
 
 export type StateMachine<self = StateMachine> = {
-    SetState: (self: self, stateName: string) -> ();
+    SetState: (self: self, stateName: string?) -> ();
 }
 type PrivateStateMachine = StateMachine<PrivateStateMachine> & {
     _stateList: {[string]: State};
@@ -29,17 +29,19 @@ function StateMachineUtil.stateMachine(stateList: {[string]: State})
     self._stateList = stateList
     self._currentState = nil
 
-    function self.SetState(self: PrivateStateMachine, stateName: string)
-        local state = self._stateList[stateName]; do
-            assert(state, `Attempted to set state to {stateName}`)
-        end
-
+    function self.SetState(self: PrivateStateMachine, stateName: string?)
         if self._currentState then
             self._currentState:Exit()
         end
 
-        state:Enter()
-        self._currentState = state
+        if stateName then
+            local state = self._stateList[stateName]; do
+                assert(state, `Attempted to set state to {stateName}`)
+            end
+
+            state:Enter()
+            self._currentState = state
+        end
     end
 
     return self

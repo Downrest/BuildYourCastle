@@ -10,8 +10,14 @@ local HandleController = {}
 
 local FORWARD_OFFSET = 1
 local HANDLE_RADIUS = 1.5
+
+local HANDLE_TO_SPHERE_RADIUS_RATIO = 1
+
+local HANDLE_TO_CONE_RADIUS_RATIO = 1
+local HANDLE_TO_CONE_HEIGHT_RATIO = 1.5
+
 local ARC_INNER_RADIUS_RATIO = .985
-local HANDLE_RADIUS_TO_ARC_RATIO = .025
+local HANDLE_RADIUS_TO_ARC_HEIGHT_RATIO = .025
 
 local camera = workspace.CurrentCamera
 local previousHandleData: BuildClientService.HandleData?
@@ -56,28 +62,33 @@ local function stepHandle(
             local adornmentAsset = adornmentData.asset
             local adornmentType = adornmentData.type
 
-            -- rotate sphere handle
+            -- sphere handle (rotate)
             if adornmentType == BuildClientService.HANDLE_ADORNMENT_TYPES.SphereHandleAdornment then
                 adornmentAsset = (adornmentAsset:: SphereHandleAdornment)
 
-                adornmentAsset.Radius = handleRadius
+                adornmentAsset.Radius = handleRadius * HANDLE_TO_SPHERE_RADIUS_RATIO
 
-            -- arc handle
+            -- cone handle (move)
+            elseif adornmentType == BuildClientService.HANDLE_ADORNMENT_TYPES.ConeHandleAdornment then
+                adornmentAsset = (adornmentAsset:: ConeHandleAdornment)
+                
+                adornmentAsset.Radius = handleRadius * HANDLE_TO_CONE_RADIUS_RATIO
+                adornmentAsset.Height = handleRadius * HANDLE_TO_CONE_HEIGHT_RATIO
+
+            -- arc handle (rotate)
             elseif adornmentType == BuildClientService.HANDLE_ADORNMENT_TYPES.CylinderHandleAdornment then
                 adornmentAsset = (adornmentAsset:: CylinderHandleAdornment)
 
-                local handleModelSize = handleModel:GetExtentsSize()
+                local handleModelSize = handleModel:GetExtentsSize() -- make this cosntant
+                local arcHalfIncrementRatio = (1 + (1 - ARC_INNER_RADIUS_RATIO))
                 local handleModelRadius = (
                     VectorUtil.Average3(handleModelSize.X, handleModelSize.Y, handleModelSize.Z) 
-                    - (
-                        handleRadius
-                        * 2 * (1 + (1 - ARC_INNER_RADIUS_RATIO))
-                    )
+                    - (handleRadius * 2 * arcHalfIncrementRatio)
                 ) / 2
                 
                 adornmentAsset.InnerRadius = handleModelRadius * ARC_INNER_RADIUS_RATIO
                 adornmentAsset.Radius = handleModelRadius
-                adornmentAsset.Height = handleModelRadius * HANDLE_RADIUS_TO_ARC_RATIO
+                adornmentAsset.Height = handleModelRadius * HANDLE_RADIUS_TO_ARC_HEIGHT_RATIO
             end
         end
     end
@@ -91,9 +102,13 @@ function HandleController.Init()
     Vide.effect(function()
         local handleData = BuildClientService.CurrentHandleData()
 
-        if handleData then
+        if handleData ~= BuildClientService.NIL_HANDLE_DATA then
             previousHandleData = handleData
         else
+            if not previousHandleData then
+                return
+            end
+
             resetHandle(previousHandleData:: BuildClientService.HandleData)
             previousHandleData = nil
         end

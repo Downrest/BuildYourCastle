@@ -19,7 +19,7 @@ export type HandleData = {
 	handleAdornmentDefaults: {
 		{ 
 			type: string;
-			asset: SphereHandleAdornment | CylinderHandleAdornment;
+			asset: SphereHandleAdornment | ConeHandleAdornment | CylinderHandleAdornment;
 		}
 	};
 }
@@ -48,6 +48,7 @@ BuildClientService.HANDLE_STATES = {
 }
 BuildClientService.HANDLE_ADORNMENT_TYPES = {
 	SphereHandleAdornment = "SphereHandleAdornment";
+	ConeHandleAdornment = "ConeHandleAdornment";
 	CylinderHandleAdornment = "CylinderHandleAdornment";
 }
 
